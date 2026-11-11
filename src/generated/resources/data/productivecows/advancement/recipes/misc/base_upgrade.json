@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_iron_bars": {
+    "has_redstone": {
       "conditions": {
         "items": [
           {
-            "items": "minecraft:iron_bars"
+            "items": "#c:dusts/redstone"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "materialcows:breeding_cage"
+        "recipe": "productivecows:base_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_iron_bars"
+      "has_redstone"
     ]
   ],
   "rewards": {
     "recipes": [
-      "materialcows:breeding_cage"
+      "productivecows:base_upgrade"
     ]
   }
 }

@@ -1,15 +1,16 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "productivecows:base_upgrade"
     },
     {
-      "item": "minecraft:redstone"
+      "tag": "c:dusts/redstone"
     }
   ],
   "result": {
-    "id": "productivecows:energy_upgrade",
-    "count": 1
+    "count": 1,
+    "id": "productivecows:energy_upgrade"
   }
 }

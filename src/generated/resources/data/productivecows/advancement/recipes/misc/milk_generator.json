@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_gold": {
+    "has_bucket": {
       "conditions": {
         "items": [
           {
-            "items": "#c:ingots/gold"
+            "items": "minecraft:bucket"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "materialcows:efficiency_upgrade"
+        "recipe": "productivecows:milk_generator"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_gold"
+      "has_bucket"
     ]
   ],
   "rewards": {
     "recipes": [
-      "materialcows:efficiency_upgrade"
+      "productivecows:milk_generator"
     ]
   }
 }

@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_sugar": {
+    "has_bucket": {
       "conditions": {
         "items": [
           {
-            "items": "minecraft:sugar"
+            "items": "minecraft:bucket"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "materialcows:speed_upgrade"
+        "recipe": "productivecows:cow_cage"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_sugar"
+      "has_bucket"
     ]
   ],
   "rewards": {
     "recipes": [
-      "materialcows:speed_upgrade"
+      "productivecows:cow_cage"
     ]
   }
 }

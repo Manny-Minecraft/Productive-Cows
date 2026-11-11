@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_leather": {
+    "has_iron_bars": {
       "conditions": {
         "items": [
           {
-            "items": "minecraft:leather"
+            "items": "minecraft:iron_bars"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "materialcows:cow_stick"
+        "recipe": "productivecows:breeding_cage"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_leather"
+      "has_iron_bars"
     ]
   ],
   "rewards": {
     "recipes": [
-      "materialcows:cow_stick"
+      "productivecows:breeding_cage"
     ]
   }
 }

@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_bucket": {
+    "has_base_upgrade": {
       "conditions": {
         "items": [
           {
-            "items": "minecraft:bucket"
+            "items": "productivecows:base_upgrade"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "materialcows:cow_cage"
+        "recipe": "productivecows:speed_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -21,12 +21,12 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_bucket"
+      "has_base_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
-      "materialcows:cow_cage"
+      "productivecows:speed_upgrade"
     ]
   }
 }

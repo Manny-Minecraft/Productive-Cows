@@ -112,9 +112,9 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
     // JEI Integration (Optional)
-    compileOnly "mezz.jei:jei-1.21.1-common-api:19.+"
-    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:19.+"
-    runtimeOnly "mezz.jei:jei-1.21.1-neoforge:19.+"
+    compileOnly "mezz.jei:jei-1.21.1-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
+    runtimeOnly "mezz.jei:jei-1.21.1-neoforge:${jei_version}"
 
     // Jade / WAILA Integration (Optional)
     compileOnly "maven.modrinth:jade:15.4.1+neoforge"

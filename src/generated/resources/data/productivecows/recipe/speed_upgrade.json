@@ -1,15 +1,16 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "productivecows:base_upgrade"
     },
     {
-      "item": "minecraft:glowstone_dust"
+      "item": "minecraft:sugar"
     }
   ],
   "result": {
-    "id": "productivecows:efficiency_upgrade",
-    "count": 1
+    "count": 1,
+    "id": "productivecows:speed_upgrade"
   }
 }
