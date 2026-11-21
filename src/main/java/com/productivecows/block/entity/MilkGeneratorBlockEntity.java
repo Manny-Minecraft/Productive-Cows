@@ -71,12 +71,6 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         }
 
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot == 0) return ItemStack.EMPTY;
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
         protected void onContentsChanged(int slot) {
             setChanged();
             if (level != null && !level.isClientSide) {
@@ -153,8 +147,11 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         return energyStorage;
     }
 
+    // Hoppers and pipes may only take empty buckets; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 1);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {

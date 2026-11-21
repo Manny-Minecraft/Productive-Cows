@@ -52,11 +52,6 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
         public int getSlotLimit(int slot) {
             if (slot == 0) {
                 return 1;
@@ -116,8 +111,11 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         return fluidTank;
     }
 
+    // Hoppers and pipes may only take the filled buckets; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 2);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {

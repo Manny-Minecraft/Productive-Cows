@@ -202,8 +202,11 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         return energyStorage;
     }
 
+    // Hoppers and pipes may only take empty buckets and results, never upgrades; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 1, 4);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {

@@ -52,8 +52,11 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         }
     };
 
+    // Hoppers and pipes may only take the offspring; the menu uses itemHandler directly
+    private final net.neoforged.neoforge.items.IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 3);
+
     public net.neoforged.neoforge.items.IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     private int progress = 0;

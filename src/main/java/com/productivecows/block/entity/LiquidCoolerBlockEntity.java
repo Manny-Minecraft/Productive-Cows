@@ -75,12 +75,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         }
 
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot != 1 && slot != 4) return ItemStack.EMPTY;
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
         protected void onContentsChanged(int slot) {
             setChanged();
             if (level != null && !level.isClientSide) {
@@ -149,8 +143,11 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         return fluidTank;
     }
 
+    // Hoppers and pipes may only take empty buckets and results; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 1, 4);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {
