@@ -237,6 +237,18 @@ public class ProductiveCows {
                         }
                     }).build());
 
+    /**
+     * Definitions for the side that asks: the server always reads its loaded data, the client the copy the
+     * server synced. In singleplayer both sides share this JVM, so block entities must never use the client map.
+     */
+    public static java.util.Map<net.minecraft.resources.ResourceLocation, CowDefinition> getDefinitions(@org.jetbrains.annotations.Nullable net.minecraft.world.level.Level level) {
+        if (level != null && level.isClientSide) {
+            return com.productivecows.network.ClientCowData.getDefinitions();
+        }
+        return com.productivecows.data.MaterialCowDataLoader.getDefinitions();
+    }
+
+    // For client-side display only (screens, JEI, creative tabs); game logic uses getDefinitions(level)
     public static java.util.Map<net.minecraft.resources.ResourceLocation, CowDefinition> getActiveDefinitions() {
         var clientDefs = com.productivecows.network.ClientCowData.getDefinitions();
         if (!clientDefs.isEmpty()) {
@@ -273,6 +285,10 @@ public class ProductiveCows {
         // Note that this is necessary if and only if we want *this* class (ProductiveCows) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
+
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == Dist.CLIENT) {
+            NeoForge.EVENT_BUS.addListener(com.productivecows.client.ClientModBusEvents::onLoggingOut);
+        }
 
         // Balance values live in the per-world server config (serverconfig/productivecows-server.toml),
         // which servers sync to clients. Register the spec only once: a second COMMON registration

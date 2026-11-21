@@ -17,7 +17,12 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 @EventBusSubscriber(modid = ProductiveCows.MODID, value = Dist.CLIENT)
 public class ClientModBusEvents {
-    
+
+    // Registered on the game bus from the mod constructor: forget the previous server's cows when leaving it
+    public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        ClientCowData.clear();
+    }
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ProductiveCows.MATERIAL_COW.get(), MaterialCowRenderer::new);

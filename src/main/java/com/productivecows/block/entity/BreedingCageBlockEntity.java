@@ -178,7 +178,7 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         if (customData != null) {
             CompoundTag tag = customData.copyTag();
             if (tag.contains("CowDefinitionId")) {
-                return ResourceLocation.tryParse(tag.getString("CowDefinitionId"));
+                return com.productivecows.data.MaterialCowDataLoader.resolveId(ResourceLocation.tryParse(tag.getString("CowDefinitionId")));
             }
         }
         return null;
@@ -222,7 +222,7 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
     }
 
     private CowDefinition findMutation(ResourceLocation p1, ResourceLocation p2) {
-        Map<ResourceLocation, CowDefinition> defs = ProductiveCows.getActiveDefinitions();
+        Map<ResourceLocation, CowDefinition> defs = ProductiveCows.getDefinitions(level);
         for (CowDefinition def : defs.values()) {
             ResourceLocation defP1 = def.parent1();
             ResourceLocation defP2 = def.parent2();

@@ -37,17 +37,10 @@ public class MaterialCowDataLoader extends SimpleJsonResourceReloadListener {
             CowDefinition.CODEC.parse(JsonOps.INSTANCE, jsonElement)
                     .resultOrPartial(error -> LOGGER.error("Failed to parse material cow definition {}: {}", location, error))
                     .ifPresent(definition -> {
-                        boolean isValid = true;
-                        
-                        if (!BuiltInRegistries.FLUID.containsKey(definition.fluidId())) {
-                            isValid = false;
-                        }
-                        
-                        if (definition.coolingResult() != null && !BuiltInRegistries.ITEM.containsKey(definition.coolingResult())) {
-                            isValid = false;
-                        }
-                        
-                        if (isValid) {
+                        String problem = validate(definition);
+                        if (problem != null) {
+                            LOGGER.warn("Skipping material cow definition {}: {}", location, problem);
+                        } else {
                             newDefinitions.put(location, definition.withId(location));
                         }
                     });
@@ -62,6 +55,26 @@ public class MaterialCowDataLoader extends SimpleJsonResourceReloadListener {
     }
 
     /**
+     * Why a definition can't be used, or null when it is valid. Shared by datapack loading and the KubeJS builder.
+     */
+    @org.jetbrains.annotations.Nullable
+    public static String validate(CowDefinition definition) {
+        if (!BuiltInRegistries.FLUID.containsKey(definition.fluidId())) {
+            return "unknown fluid " + definition.fluidId();
+        }
+        if (definition.coolingResult() != null && !BuiltInRegistries.ITEM.containsKey(definition.coolingResult())) {
+            return "unknown cooling result item " + definition.coolingResult();
+        }
+        if (definition.coolingResultTag() != null && ResourceLocation.tryParse(definition.coolingResultTag()) == null) {
+            return "invalid cooling result tag '" + definition.coolingResultTag() + "' (write it without '#', e.g. c:ingots/iron)";
+        }
+        if (!(definition.breedChance() >= 0.0 && definition.breedChance() <= 1.0)) {
+            return "breed chance must be between 0 and 1, got " + definition.breedChance();
+        }
+        return null;
+    }
+
+    /**
      * Gets all loaded cow definitions.
      */
     public static Map<ResourceLocation, CowDefinition> getDefinitions() {
@@ -72,6 +85,11 @@ public class MaterialCowDataLoader extends SimpleJsonResourceReloadListener {
      * Gets a single cow definition by its ID.
      */
     public static CowDefinition getDefinition(ResourceLocation id) {
-        return DEFINITIONS.get(id);
+        return id == null ? null : DEFINITIONS.get(resolveId(id));
+    }
+
+    /** The current id for a cow id read from a save, see {@link CowDefinition#resolveLegacyId}. */
+    public static ResourceLocation resolveId(ResourceLocation id) {
+        return CowDefinition.resolveLegacyId(id, DEFINITIONS);
     }
 }

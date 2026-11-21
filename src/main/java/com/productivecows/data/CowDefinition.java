@@ -51,6 +51,18 @@ public record CowDefinition(
             null, name, tier, hexColor, fluidId, p1Opt.orElse(null), p2Opt.orElse(null), breedChance, baseYield, coolingResultOpt.orElse(null), coolingTagOpt.orElse(null)
     )));
 
+    /**
+     * KubeJS cows created without a namespace used to be registered as minecraft:<path> and are now
+     * kubejs:<path>. Returns the id to look up in {@code definitions}, so cows saved with the old id keep working.
+     */
+    public static ResourceLocation resolveLegacyId(ResourceLocation id, java.util.Map<ResourceLocation, ?> definitions) {
+        if (id == null || definitions.containsKey(id) || !"minecraft".equals(id.getNamespace())) {
+            return id;
+        }
+        ResourceLocation alias = ResourceLocation.fromNamespaceAndPath("kubejs", id.getPath());
+        return definitions.containsKey(alias) ? alias : id;
+    }
+
     // Convenience method to attach the ID after reading from a JSON pack
     public CowDefinition withId(ResourceLocation id) {
         return new CowDefinition(id, this.name, this.tier, this.hexColor, this.fluidId, this.parent1, this.parent2, this.breedChance, this.baseYield, this.coolingResult, this.coolingResultTag);

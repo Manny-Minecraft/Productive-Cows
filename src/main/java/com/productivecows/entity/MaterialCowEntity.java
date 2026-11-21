@@ -111,7 +111,7 @@ public class MaterialCowEntity extends Cow {
         if (tag.contains("CowDefinitionId")) {
             String idStr = tag.getString("CowDefinitionId");
             if (!idStr.isEmpty()) {
-                setCowDefinitionId(ResourceLocation.tryParse(idStr));
+                setCowDefinitionId(MaterialCowDataLoader.resolveId(ResourceLocation.tryParse(idStr)));
             }
         }
         if (tag.contains("MilkingCooldown")) {

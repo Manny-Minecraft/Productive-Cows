@@ -163,7 +163,7 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         if (!tankFluid.isEmpty()) {
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(tankFluid.getFluid());
             CowDefinition matchingDef = null;
-            for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                 if (def.fluidId().equals(fluidKey)) {
                     matchingDef = def;
                     break;

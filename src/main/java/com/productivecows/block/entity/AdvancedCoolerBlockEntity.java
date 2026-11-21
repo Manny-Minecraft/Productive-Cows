@@ -122,7 +122,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         public boolean isFluidValid(FluidStack stack) {
             Fluid f = stack.getFluid();
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(f);
-            for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                 if (def.fluidId().equals(fluidKey)) {
                     return true;
                 }
@@ -255,7 +255,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         if (!tankFluid.isEmpty()) {
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(tankFluid.getFluid());
             CowDefinition matchingDef = null;
-            for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                 if (def.fluidId().equals(fluidKey)) {
                     matchingDef = def;
                     break;
@@ -401,7 +401,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                         // Check if this fluid is coolable
                         ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(drainedSimulated.getFluid());
                         boolean isCoolable = false;
-                        for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+                        for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                             if (def.fluidId().equals(fluidKey)) {
                                 isCoolable = true;
                                 break;
