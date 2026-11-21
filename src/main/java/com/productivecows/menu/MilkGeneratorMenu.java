@@ -21,13 +21,13 @@ public class MilkGeneratorMenu extends AbstractContainerMenu {
 
     // Client Constructor
     public MilkGeneratorMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(4));
+        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(6));
     }
 
     // Common/Server Constructor
     public MilkGeneratorMenu(int windowId, Inventory inv, BlockEntity be, ContainerData data) {
         super(ProductiveCows.MILK_GENERATOR_MENU.get(), windowId);
-        checkContainerDataCount(data, 4);
+        checkContainerDataCount(data, 6);
         this.blockEntity = be;
         this.data = data;
 
@@ -68,11 +68,11 @@ public class MilkGeneratorMenu extends AbstractContainerMenu {
     }
 
     public int getEnergyStored() {
-        return data.get(0);
+        return SplitInt.join(data.get(0), data.get(4));
     }
 
     public int getMaxEnergyStored() {
-        return data.get(1);
+        return SplitInt.join(data.get(1), data.get(5));
     }
 
     public int getFluidAmount() {

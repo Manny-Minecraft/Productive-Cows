@@ -150,8 +150,9 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0 -> energyStorage.getEnergyStored();
-                case 1 -> energyStorage.getMaxEnergyStored();
+                // Energy can exceed a short: low halves here, high halves at the end (see SplitInt)
+                case 0 -> com.productivecows.menu.SplitInt.low(energyStorage.getEnergyStored());
+                case 1 -> com.productivecows.menu.SplitInt.low(energyStorage.getMaxEnergyStored());
                 case 2 -> fluidTank.getFluidAmount();
                 case 3 -> fluidTank.getCapacity();
                 case 4 -> cookTime;
@@ -160,6 +161,8 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                     yield getCookTimeTotalForSpeed(speedUpgrades);
                 }
                 case 6 -> getEnergyCostPerTick();
+                case 7 -> com.productivecows.menu.SplitInt.high(energyStorage.getEnergyStored());
+                case 8 -> com.productivecows.menu.SplitInt.high(energyStorage.getMaxEnergyStored());
                 default -> 0;
             };
         }
@@ -167,8 +170,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public void set(int index, int value) {
             switch (index) {
-                case 0 -> energyStorage.setEnergy(value);
-                case 2 -> {
+case 2 -> {
                     if (fluidTank.getFluid().isEmpty()) {
                         fluidTank.setFluid(FluidStack.EMPTY);
                     } else {
@@ -181,7 +183,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
 
         @Override
         public int getCount() {
-            return 7;
+            return 9;
         }
     };
 

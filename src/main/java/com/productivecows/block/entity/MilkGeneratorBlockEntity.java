@@ -103,10 +103,13 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0 -> energyStorage.getEnergyStored();
-                case 1 -> energyStorage.getMaxEnergyStored();
+                // Energy can exceed a short: low halves here, high halves at the end (see SplitInt)
+                case 0 -> com.productivecows.menu.SplitInt.low(energyStorage.getEnergyStored());
+                case 1 -> com.productivecows.menu.SplitInt.low(energyStorage.getMaxEnergyStored());
                 case 2 -> fluidTank.getFluidAmount();
                 case 3 -> fluidTank.getCapacity();
+                case 4 -> com.productivecows.menu.SplitInt.high(energyStorage.getEnergyStored());
+                case 5 -> com.productivecows.menu.SplitInt.high(energyStorage.getMaxEnergyStored());
                 default -> 0;
             };
         }
@@ -114,8 +117,7 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         @Override
         public void set(int index, int value) {
             switch (index) {
-                case 0 -> energyStorage.setEnergy(value);
-                case 2 -> {
+case 2 -> {
                     Fluid milkFluid = com.productivecows.fluid.ModFluids.LIQUID_MILK.source().get();
                     fluidTank.setFluid(new FluidStack(milkFluid, value));
                 }
@@ -124,7 +126,7 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
 
         @Override
         public int getCount() {
-            return 4;
+            return 6;
         }
     };
 
