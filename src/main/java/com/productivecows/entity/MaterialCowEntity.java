@@ -38,7 +38,9 @@ import java.util.ArrayList;
 public class MaterialCowEntity extends Cow {
 
     private static final EntityDataAccessor<String> COW_DEFINITION_ID = SynchedEntityData.defineId(MaterialCowEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Integer> MILKING_COOLDOWN = SynchedEntityData.defineId(MaterialCowEntity.class, EntityDataSerializers.INT);
+
+    // Server-only: the client never reads it (Jade gets it from server data), so it is not synced entity data
+    private int milkingCooldown;
 
     public MaterialCowEntity(EntityType<? extends Cow> type, Level level) {
         super(type, level);
@@ -52,7 +54,6 @@ public class MaterialCowEntity extends Cow {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(COW_DEFINITION_ID, "");
-        builder.define(MILKING_COOLDOWN, 0);
     }
 
     public void setCowDefinitionId(ResourceLocation id) {
@@ -78,11 +79,11 @@ public class MaterialCowEntity extends Cow {
     }
 
     public int getMilkingCooldown() {
-        return this.entityData.get(MILKING_COOLDOWN);
+        return this.milkingCooldown;
     }
 
     public void setMilkingCooldown(int ticks) {
-        this.entityData.set(MILKING_COOLDOWN, ticks);
+        this.milkingCooldown = Math.max(0, ticks);
     }
 
     @Override

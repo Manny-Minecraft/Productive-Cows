@@ -33,6 +33,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
 
+    // Only what the client renders is synced, throttled; GUI values travel through ContainerData
+    private final ClientSyncThrottle clientSync = new ClientSyncThrottle();
+
+    private final NeighborCapabilities<IFluidHandler> neighborFluids = new NeighborCapabilities<>(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK);
+
     private final ItemStackHandler itemHandler = new ItemStackHandler(3) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -65,9 +70,7 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            if (slot == 0) clientSync.mark(); // the renderer shows the caged cow
         }
     };
 
@@ -75,9 +78,7 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            clientSync.mark();
         }
     };
 
@@ -195,7 +196,6 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                         fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
                         milkingTimer = 400;
                         setChanged();
-                        lvl.sendBlockUpdated(pos, state, state, 3);
                     }
                 }
             }
@@ -211,7 +211,6 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                     fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
                     milkingTimer = 400;
                     setChanged();
-                    lvl.sendBlockUpdated(pos, state, state, 3);
                 }
             }
         } else {
@@ -222,17 +221,15 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         tickAutoOutputFluid(lvl, pos);
+        clientSync.flush(lvl, pos, state);
     }
 
     private void tickAutoOutputFluid(Level lvl, BlockPos pos) {
-        if (fluidTank.getFluidAmount() > 0) {
+        if (fluidTank.getFluidAmount() > 0 && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
-                BlockPos targetPos = pos.relative(dir);
-                if (lvl.getBlockEntity(targetPos) instanceof CowCageBlockEntity) {
-                    continue; // Do not push fluid into adjacent cow cages to prevent cross-contamination and loops
-                }
-                IFluidHandler neighborFluidHandler = lvl.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, targetPos, dir.getOpposite());
-                if (neighborFluidHandler != null) {
+                IFluidHandler neighborFluidHandler = neighborFluids.get(serverLevel, pos, dir);
+                // Do not push fluid into adjacent cow cages to prevent cross-contamination and loops
+                if (neighborFluidHandler != null && !(lvl.getBlockEntity(pos.relative(dir)) instanceof CowCageBlockEntity)) {
                     FluidStack toDrain = new FluidStack(fluidTank.getFluid().getFluid(), Math.min(1000, fluidTank.getFluidAmount()));
                     int filled = neighborFluidHandler.fill(toDrain, IFluidHandler.FluidAction.EXECUTE);
                     if (filled > 0) {

@@ -73,6 +73,12 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
+    // Only what the client renders is synced, throttled; GUI values travel through ContainerData
+    private final ClientSyncThrottle clientSync = new ClientSyncThrottle();
+
+    private final NeighborCapabilities<IFluidHandler> neighborFluids = new NeighborCapabilities<>(Capabilities.FluidHandler.BLOCK);
+    private final NeighborCapabilities<IItemHandler> neighborItems = new NeighborCapabilities<>(Capabilities.ItemHandler.BLOCK);
+
     private final ItemStackHandler itemHandler = new ItemStackHandler(6) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -108,9 +114,6 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
 
@@ -130,9 +133,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            clientSync.mark();
         }
     };
 
@@ -140,9 +141,6 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public void onEnergyChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
     private int cookTime = 0;
@@ -310,7 +308,6 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                                 }
                                 cookTime = 0;
                                 setChanged();
-                                lvl.sendBlockUpdated(pos, state, state, 3);
                             }
                             setChanged();
                         }
@@ -330,6 +327,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         }
 
         tickAutoOutput(lvl, pos);
+        clientSync.flush(lvl, pos, state);
     }
 
     private int getCookTimeTotalForSpeed(int upgrades) {
@@ -375,6 +373,9 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     private void tickAutoInput(Level lvl, BlockPos pos) {
+        if (!(lvl instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
+            return;
+        }
         // Query neighbors in all 6 directions to pull fluid from
         for (Direction dir : Direction.values()) {
             // Check if our fluid tank has room to pull fluid (at least 100 mB room)
@@ -383,12 +384,11 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                 break;
             }
 
-            BlockPos targetPos = pos.relative(dir);
-            BlockEntity neighborBE = lvl.getBlockEntity(targetPos);
+            IFluidHandler neighborFluidHandler = neighborFluids.get(serverLevel, pos, dir);
+            BlockEntity neighborBE = neighborFluidHandler == null ? null : lvl.getBlockEntity(pos.relative(dir));
             if (neighborBE instanceof AdvancedCoolerBlockEntity || neighborBE instanceof LiquidCoolerBlockEntity) {
                 continue;
             }
-            IFluidHandler neighborFluidHandler = lvl.getCapability(Capabilities.FluidHandler.BLOCK, targetPos, dir.getOpposite());
             if (neighborFluidHandler != null) {
                 // If our local tank has fluid, we can only pull matching fluid. If empty, we can pull any coolable fluid.
                 FluidStack localFluid = fluidTank.getFluid();
@@ -431,9 +431,8 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
 
     private void tickAutoOutput(Level lvl, BlockPos pos) {
         ItemStack outputStack = itemHandler.getStackInSlot(4);
-        if (!outputStack.isEmpty()) {
-            BlockPos targetPos = pos.above();
-            IItemHandler neighborItemHandler = lvl.getCapability(Capabilities.ItemHandler.BLOCK, targetPos, Direction.DOWN);
+        if (!outputStack.isEmpty() && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            IItemHandler neighborItemHandler = neighborItems.get(serverLevel, pos, Direction.UP);
             if (neighborItemHandler != null) {
                 ItemStack remainder = ItemHandlerHelper.insertItem(neighborItemHandler, outputStack.copy(), false);
                 if (remainder.getCount() != outputStack.getCount()) {

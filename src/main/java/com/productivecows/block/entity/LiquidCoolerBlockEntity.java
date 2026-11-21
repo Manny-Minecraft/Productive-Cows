@@ -33,6 +33,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider {
 
+    // Only what the client renders is synced, throttled; GUI values travel through ContainerData
+    private final ClientSyncThrottle clientSync = new ClientSyncThrottle();
+
+    private final NeighborCapabilities<IItemHandler> neighborItems = new NeighborCapabilities<>(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK);
+
     private final ItemStackHandler itemHandler = new ItemStackHandler(5) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -51,9 +56,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
 
@@ -61,9 +63,7 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            clientSync.mark();
         }
     };
 
@@ -201,7 +201,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
                                 }
                                 cookTime = 0;
                                 setChanged();
-                                lvl.sendBlockUpdated(pos, state, state, 3);
                             }
                             setChanged();
                         }
@@ -216,13 +215,13 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         }
 
         tickAutoOutput(lvl, pos);
+        clientSync.flush(lvl, pos, state);
     }
 
     private void tickAutoOutput(Level lvl, BlockPos pos) {
         ItemStack outputStack = itemHandler.getStackInSlot(4);
-        if (!outputStack.isEmpty()) {
-            BlockPos targetPos = pos.above();
-            net.neoforged.neoforge.items.IItemHandler neighborItemHandler = lvl.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, targetPos, net.minecraft.core.Direction.DOWN);
+        if (!outputStack.isEmpty() && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            IItemHandler neighborItemHandler = neighborItems.get(serverLevel, pos, net.minecraft.core.Direction.UP);
             if (neighborItemHandler != null) {
                 ItemStack remainder = net.neoforged.neoforge.items.ItemHandlerHelper.insertItem(neighborItemHandler, outputStack.copy(), false);
                 if (remainder.getCount() != outputStack.getCount()) {

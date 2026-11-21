@@ -55,6 +55,9 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         }
     }
 
+    // No renderer reads this block entity and the GUI uses ContainerData, so changes only mark it for saving
+    private final NeighborCapabilities<IEnergyStorage> neighborEnergy = new NeighborCapabilities<>(Capabilities.EnergyStorage.BLOCK);
+
     private final ItemStackHandler itemHandler = new ItemStackHandler(2) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -73,9 +76,6 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
 
@@ -93,9 +93,6 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
 
@@ -203,15 +200,14 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
 
         // 2. Auto-push generated energy to neighboring blocks (max 200 RF/t output)
         int energyStored = energyStorage.getEnergyStored();
-        if (energyStored > 0) {
+        if (energyStored > 0 && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             int maxSend = Math.min(200, energyStored);
             int sent = 0;
 
             for (Direction dir : Direction.values()) {
                 if (sent >= maxSend) break;
 
-                BlockPos targetPos = pos.relative(dir);
-                IEnergyStorage targetEnergy = lvl.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos, dir.getOpposite());
+                IEnergyStorage targetEnergy = neighborEnergy.get(serverLevel, pos, dir);
                 if (targetEnergy != null && targetEnergy.canReceive()) {
                     int toSend = maxSend - sent;
                     int accepted = targetEnergy.receiveEnergy(toSend, false);
