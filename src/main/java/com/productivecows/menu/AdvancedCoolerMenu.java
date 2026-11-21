@@ -21,13 +21,13 @@ public class AdvancedCoolerMenu extends AbstractContainerMenu {
 
     // Client Constructor
     public AdvancedCoolerMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(6));
+        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(7));
     }
 
     // Common/Server Constructor
     public AdvancedCoolerMenu(int windowId, Inventory inv, BlockEntity be, ContainerData data) {
         super(ProductiveCows.ADVANCED_COOLER_MENU.get(), windowId);
-        checkContainerDataCount(data, 6);
+        checkContainerDataCount(data, 7);
         this.blockEntity = be;
         this.data = data;
 
@@ -117,6 +117,10 @@ public class AdvancedCoolerMenu extends AbstractContainerMenu {
 
     public int getCookTimeTotal() {
         return data.get(5);
+    }
+
+    public int getEnergyCostPerTick() {
+        return data.get(6);
     }
 
     private ItemStack getFluidFromBucket(ItemStack stack) {

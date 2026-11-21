@@ -141,14 +141,8 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
             // If currently cooling, show the dynamic RF/t consumption rate
             int progress = menu.getCookTime();
             if (progress > 0) {
-                int speedUpgrades = Math.max(0, Math.min(3, menu.getSlot(2).getItem().getCount()));
-                int efficiencyUpgrades = Math.max(0, Math.min(3, menu.getSlot(3).getItem().getCount()));
-                int energyUpgrades = Math.max(0, Math.min(3, menu.getSlot(5).getItem().getCount()));
-                
-                int baseEnergyPerTick = switch(speedUpgrades) { case 1 -> 200; case 2 -> 500; case 3 -> 2000; default -> 100; };
-                float efficiencyMultiplier = switch(efficiencyUpgrades) { case 1 -> 1.2f; case 2 -> 1.5f; case 3 -> 2.0f; default -> 1.0f; };
-                float energyMultiplier = switch(energyUpgrades) { case 1 -> 0.7f; case 2 -> 0.5f; case 3 -> 0.3f; default -> 1.0f; };
-                int currentRfCost = (int)(baseEnergyPerTick * efficiencyMultiplier * energyMultiplier);
+                // Computed by the block entity from the config and the upgrades, so the tooltip matches the real cost
+                int currentRfCost = menu.getEnergyCostPerTick();
 
                 text.add(Component.translatable("gui.productivecows.consuming", currentRfCost).withStyle(net.minecraft.ChatFormatting.YELLOW));
             } else {

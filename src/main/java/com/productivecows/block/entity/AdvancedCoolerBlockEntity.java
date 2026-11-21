@@ -159,6 +159,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                     int speedUpgrades = Math.max(0, Math.min(3, itemHandler.getStackInSlot(2).getCount()));
                     yield getCookTimeTotalForSpeed(speedUpgrades);
                 }
+                case 6 -> getEnergyCostPerTick();
                 default -> 0;
             };
         }
@@ -180,7 +181,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
 
         @Override
         public int getCount() {
-            return 6;
+            return 7;
         }
     };
 
@@ -285,11 +286,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                     int cookTimeTotal = getCookTimeTotalForSpeed(speedUpgrades);
                     int fluidCost = getFluidCostForEfficiency(efficiencyUpgrades);
                     
-                    int baseEnergyPerTick = getBaseEnergyPerTick(speedUpgrades);
-                    float efficiencyMultiplier = getEfficiencyEnergyMultiplier(efficiencyUpgrades);
-                    float energyMultiplier = getEnergyUpgradeMultiplier(energyUpgrades);
-                    
-                    int energyCostPerTick = (int) (baseEnergyPerTick * efficiencyMultiplier * energyMultiplier);
+                    int energyCostPerTick = getEnergyCostPerTick(speedUpgrades, efficiencyUpgrades, energyUpgrades);
 
                     if (fluidTank.getFluidAmount() >= fluidCost && energyStorage.getEnergyStored() >= energyCostPerTick) {
                         ItemStack outputSlot = itemHandler.getStackInSlot(4);
@@ -344,6 +341,20 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         if (upgrades == 2) return (int)(baseCost * 0.75f);
         if (upgrades == 3) return (int)(baseCost * 0.50f);
         return baseCost;
+    }
+
+    /** RF/t used while cooling with the installed upgrades; also sent to the GUI so its tooltip matches. */
+    public int getEnergyCostPerTick() {
+        return getEnergyCostPerTick(
+                Math.max(0, Math.min(3, itemHandler.getStackInSlot(2).getCount())),
+                Math.max(0, Math.min(3, itemHandler.getStackInSlot(3).getCount())),
+                Math.max(0, Math.min(3, itemHandler.getStackInSlot(5).getCount())));
+    }
+
+    private int getEnergyCostPerTick(int speedUpgrades, int efficiencyUpgrades, int energyUpgrades) {
+        return (int) (getBaseEnergyPerTick(speedUpgrades)
+                * getEfficiencyEnergyMultiplier(efficiencyUpgrades)
+                * getEnergyUpgradeMultiplier(energyUpgrades));
     }
 
     private int getBaseEnergyPerTick(int speedUpgrades) {
