@@ -37,6 +37,9 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             if (slot == 0) {
+                if (com.productivecows.item.CapturedCowItem.isCalf(stack)) {
+                    return false; // Calves cannot be milked
+                }
                 return stack.is(ProductiveCows.CAPTURED_COW.get()) || stack.is(ProductiveCows.MATERIAL_COW_SPAWN_EGG.get()) || stack.is(Items.COW_SPAWN_EGG);
             }
             if (slot == 1) {
@@ -162,6 +165,17 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         return false;
     }
 
+    /** Base production per milking cycle (400 ticks), scaled by the definition's base_yield percentage. */
+    private static final int BASE_YIELD_MB = 1000;
+    /** base_yield is a percentage; 800 fills the whole 8000 mB tank in one cycle. */
+    private static final int MAX_BASE_YIELD = 800;
+
+    /** mB produced per cycle: base_yield 100 = 1000 mB, 50 = 500 mB, 200 = 2000 mB. */
+    public static int getYieldPerCycle(CowDefinition def) {
+        int percent = net.minecraft.util.Mth.clamp(def.baseYield(), 1, MAX_BASE_YIELD);
+        return BASE_YIELD_MB * percent / 100;
+    }
+
     public void tick(Level lvl, BlockPos pos, BlockState state) {
         tickBucketFilling();
 
@@ -169,10 +183,11 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         if (def != null) {
             Fluid fluid = BuiltInRegistries.FLUID.get(def.fluidId());
             if (fluid != null && fluid != net.minecraft.world.level.material.Fluids.EMPTY) {
-                FluidStack fluidStack = new FluidStack(fluid, 1000);
-                // FluidTank fill returns the amount filled, checking if we can accept 1000 mB of this fluid
+                int amount = getYieldPerCycle(def);
+                FluidStack fluidStack = new FluidStack(fluid, amount);
+                // FluidTank fill returns the amount filled, checking if we can accept the whole cycle
                 int filled = fluidTank.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
-                if (filled >= 1000) {
+                if (filled >= amount) {
                     if (milkingTimer > 0) {
                         milkingTimer--;
                         setChanged();

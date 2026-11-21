@@ -52,6 +52,8 @@ Create a file in your datapack at: `data/<your_namespace>/cows/my_custom_cow.jso
 
 That's it! The mod will automatically register the cow and process the cooling into the correct tag/item.
 
+**About `base_yield`:** it is a percentage of the base production of the Cow Cage, which is 1000 mB of fluid every 20 seconds (400 ticks). `100` (the default) gives 1000 mB, `50` gives 500 mB, `200` gives 2000 mB per cycle. Accepted range: 1 to 800 (values outside it are clamped).
+
 ---
 
 ## Issues and Bug Reports

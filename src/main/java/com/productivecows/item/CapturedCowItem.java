@@ -29,8 +29,23 @@ public class CapturedCowItem extends Item {
     /** Old countdown that was never decremented: read as expired and removed by the Breeding Cage. */
     public static final String LEGACY_BREEDING_COOLDOWN = "BreedingCooldown";
 
+    /** Vanilla AgeableMob age: negative for calves, positive while an adult can't breed. Saved only when not 0. */
+    public static final String AGE = "Age";
+
     public CapturedCowItem(Properties properties) {
         super(properties);
+    }
+
+    public static boolean isCalf(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.ENTITY_DATA);
+        return customData != null && customData.getUnsafe().getInt(AGE) < 0;
+    }
+
+    /** Writes the cow's age into captured cow data; adults with age 0 keep no key so they stay stackable. */
+    public static void saveAge(CompoundTag entityData, net.minecraft.world.entity.AgeableMob mob) {
+        if (mob.getAge() != 0) {
+            entityData.putInt(AGE, mob.getAge());
+        }
     }
 
     /** Remaining breeding cooldown in ticks, 0 when the cow can breed. */
@@ -65,6 +80,7 @@ public class CapturedCowItem extends Item {
                 if (stack.has(DataComponents.CUSTOM_NAME)) {
                     cow.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
                 }
+                cow.setAge(tag.getInt(AGE));
                 cow.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
                 level.addFreshEntity(cow);
                 level.playSound(null, spawnPos, SoundEvents.COW_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -92,6 +108,7 @@ public class CapturedCowItem extends Item {
                     if (stack.has(DataComponents.CUSTOM_NAME)) {
                         cow.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
                     }
+                    cow.setAge(tag.getInt(AGE));
 
                     cow.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
                     level.addFreshEntity(cow);
@@ -116,6 +133,9 @@ public class CapturedCowItem extends Item {
             CompoundTag tag = customData.copyTag();
             if ("minecraft:cow".equals(tag.getString("id"))) {
                 tooltip.add(Component.translatable("entity.minecraft.cow").withStyle(ChatFormatting.GRAY));
+                if (tag.getInt(AGE) < 0) {
+                    tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.calf").withStyle(ChatFormatting.AQUA));
+                }
                 return;
             }
             if (tag.contains("CowDefinitionId")) {
@@ -130,6 +150,9 @@ public class CapturedCowItem extends Item {
                                 .withStyle(ChatFormatting.GOLD));
                     } else {
                         tooltip.add(Component.literal("Cow: " + defId.getPath()).withStyle(ChatFormatting.RED));
+                    }
+                    if (tag.getInt(AGE) < 0) {
+                        tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.calf").withStyle(ChatFormatting.AQUA));
                     }
                     
                     int cooldown = 0;

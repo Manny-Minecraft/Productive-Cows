@@ -15,6 +15,7 @@
   "tooltip.productivecows.captured_cow.ready": "Pronta per essere munta!",
   "tooltip.productivecows.captured_cow.breeding_cooldown": "Tempo riproduzione: %sm %ss",
   "tooltip.productivecows.captured_cow.empty": "Mucca Catturata (Vuota)",
+  "tooltip.productivecows.captured_cow.calf": "Vitello (non si può mungere)",
   "item.productivecows.captured_cow": "Mucca Catturata",
   "item.productivecows.cow_stick": "Bastone per Mucche",
   "entity.productivecows.material_cow": "Mucca dei Materiali",

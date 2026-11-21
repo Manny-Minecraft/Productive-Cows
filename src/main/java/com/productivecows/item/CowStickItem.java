@@ -34,6 +34,7 @@ public class CowStickItem extends Item {
                     entityData.putString("id", "productivecows:material_cow");
                     entityData.putString("CowDefinitionId", defId.toString());
                     entityData.putInt("MilkingCooldown", cow.getMilkingCooldown());
+                    CapturedCowItem.saveAge(entityData, cow);
                     
                     if (cow.hasCustomName()) {
                         String nameStr = cow.getCustomName().getString();
@@ -68,6 +69,7 @@ public class CowStickItem extends Item {
                 ItemStack cowStack = new ItemStack(ProductiveCows.CAPTURED_COW.get());
                 CompoundTag entityData = new CompoundTag();
                 entityData.putString("id", "minecraft:cow");
+                CapturedCowItem.saveAge(entityData, cow);
                 
                 if (cow.hasCustomName()) {
                     String nameStr = cow.getCustomName().getString();
