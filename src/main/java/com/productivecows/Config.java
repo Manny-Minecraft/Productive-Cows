@@ -15,12 +15,6 @@ public class Config {
             .defineInRange("breedingCooldownTicks", 3000, 0, Integer.MAX_VALUE);
 
     // Basic Cooler Settings
-    private static final ModConfigSpec.IntValue BASIC_COOLER_CAPACITY = BUILDER
-            .comment("Maximum RF capacity for the Basic Cooler.")
-            .defineInRange("basicCoolerCapacity", 50000, 1000, Integer.MAX_VALUE);
-    private static final ModConfigSpec.IntValue BASIC_COOLER_ENERGY_COST = BUILDER
-            .comment("RF consumed per tick by the Basic Cooler.")
-            .defineInRange("basicCoolerEnergyCost", 100, 0, Integer.MAX_VALUE);
     private static final ModConfigSpec.IntValue BASIC_COOLER_COOK_TIME = BUILDER
             .comment("Base time in ticks to process a fluid in the Basic Cooler.")
             .defineInRange("basicCoolerCookTime", 100, 1, Integer.MAX_VALUE);
@@ -43,8 +37,6 @@ public class Config {
 
     public static int breedingCooldownTicks;
 
-    public static int basicCoolerCapacity;
-    public static int basicCoolerEnergyCost;
     public static int basicCoolerCookTime;
     
     public static int advancedCoolerCapacity;
@@ -58,8 +50,6 @@ public class Config {
 
         breedingCooldownTicks = BREEDING_COOLDOWN.get();
 
-        basicCoolerCapacity = BASIC_COOLER_CAPACITY.get();
-        basicCoolerEnergyCost = BASIC_COOLER_ENERGY_COST.get();
         basicCoolerCookTime = BASIC_COOLER_COOK_TIME.get();
         
         advancedCoolerCapacity = ADVANCED_COOLER_CAPACITY.get();

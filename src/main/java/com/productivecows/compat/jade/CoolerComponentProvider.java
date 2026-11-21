@@ -34,8 +34,6 @@ public class CoolerComponentProvider implements IBlockComponentProvider, IServer
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
         if (accessor.getBlockEntity() instanceof LiquidCoolerBlockEntity cooler) {
-            data.putInt("Energy", cooler.getEnergyStorage().getEnergyStored());
-            data.putInt("MaxEnergy", cooler.getEnergyStorage().getMaxEnergyStored());
             data.putInt("FluidAmount", cooler.getFluidTank().getFluidAmount());
             data.putInt("FluidCapacity", cooler.getFluidTank().getCapacity());
             if (!cooler.getFluidTank().getFluid().isEmpty()) {

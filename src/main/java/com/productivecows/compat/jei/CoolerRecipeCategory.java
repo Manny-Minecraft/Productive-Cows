@@ -114,11 +114,9 @@ public class CoolerRecipeCategory implements IRecipeCategory<CowDefinition> {
         // Draw an arrow pointing from fluid to item
         guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "->", 50, 25, 0x888888, false);
 
-        // Draw energy/time stats
-        Component energyText = Component.literal(com.productivecows.Config.basicCoolerEnergyCost + " RF/t");
+        // Draw processing time (the Basic Cooler needs no power)
         Component timeText = Component.literal((com.productivecows.Config.basicCoolerCookTime / 20) + "s");
-        
-        guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, energyText, 40, 45, 0x555555, false);
-        guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, timeText, 40, 55, 0x555555, false);
+
+        guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, timeText, 40, 45, 0x555555, false);
     }
 }

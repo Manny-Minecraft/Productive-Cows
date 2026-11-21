@@ -29,35 +29,9 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider {
-
-    public static class CustomEnergyStorage extends EnergyStorage {
-        public CustomEnergyStorage(int capacity, int maxReceive, int maxExtract) {
-            super(capacity, maxReceive, maxExtract);
-        }
-        public void setEnergy(int energy) {
-            this.energy = energy;
-        }
-        public void consumeEnergy(int energy) {
-            this.energy = Math.max(0, this.energy - energy);
-        }
-        public void onEnergyChanged() {}
-        @Override
-        public int receiveEnergy(int maxReceive, boolean simulate) {
-            int received = super.receiveEnergy(maxReceive, simulate);
-            if (received > 0 && !simulate) onEnergyChanged();
-            return received;
-        }
-        @Override
-        public int extractEnergy(int maxExtract, boolean simulate) {
-            int extracted = super.extractEnergy(maxExtract, simulate);
-            if (extracted > 0 && !simulate) onEnergyChanged();
-            return extracted;
-        }
-    }
 
     private final ItemStackHandler itemHandler = new ItemStackHandler(5) {
         @Override
@@ -83,16 +57,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         }
     };
 
-    private final CustomEnergyStorage energyStorage = new CustomEnergyStorage(Math.max(1000, com.productivecows.Config.basicCoolerCapacity), 500, 500) {
-        @Override
-        public void onEnergyChanged() {
-            setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
-        }
-    };
-
     private final FluidTank fluidTank = new FluidTank(8000) {
         @Override
         protected void onContentsChanged() {
@@ -110,27 +74,26 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0 -> energyStorage.getEnergyStored();
-                case 1 -> energyStorage.getMaxEnergyStored();
-                case 2 -> cookTime;
-                case 3 -> Math.max(1, com.productivecows.Config.basicCoolerCookTime);
+                case 0 -> cookTime;
+                case 1 -> Math.max(1, com.productivecows.Config.basicCoolerCookTime);
                 default -> 0;
             };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 2) {
+            if (index == 0) {
                 cookTime = value;
             }
         }
 
         @Override
         public int getCount() {
-            return 4;
+            return 2;
         }
     };
 
+    // The Basic Cooler needs no power; only the Advanced Cooler uses energy
     public LiquidCoolerBlockEntity(BlockPos pos, BlockState state) {
         super(ProductiveCows.LIQUID_COOLER_BE.get(), pos, state);
     }
@@ -160,10 +123,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
     
     public int getCookTimeTotal() {
         return Math.max(1, com.productivecows.Config.basicCoolerCookTime);
-    }
-
-    public CustomEnergyStorage getEnergyStorage() {
-        return energyStorage;
     }
 
     @Nullable
@@ -228,7 +187,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
 
                 if (resultItem != Items.AIR) {
                     int cookTimeTotal = Math.max(1, com.productivecows.Config.basicCoolerCookTime);
-                    int energyCostPerTick = Math.max(0, com.productivecows.Config.basicCoolerEnergyCost);
 
                     if (fluidTank.getFluidAmount() >= 1000) {
                         ItemStack outputSlot = itemHandler.getStackInSlot(4);
@@ -248,7 +206,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
                             setChanged();
                         }
                     }
-                    return;
                 }
             } else {
                 if (cookTime != 0) {

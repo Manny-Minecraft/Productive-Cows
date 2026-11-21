@@ -21,13 +21,13 @@ public class LiquidCoolerMenu extends AbstractContainerMenu {
 
     // Client Constructor
     public LiquidCoolerMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(4));
+        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(2));
     }
 
     // Common/Server Constructor
     public LiquidCoolerMenu(int windowId, Inventory inv, BlockEntity be, ContainerData data) {
         super(ProductiveCows.LIQUID_COOLER_MENU.get(), windowId);
-        checkContainerDataCount(data, 4);
+        checkContainerDataCount(data, 2);
         this.blockEntity = be;
         this.data = data;
 
@@ -76,11 +76,11 @@ public class LiquidCoolerMenu extends AbstractContainerMenu {
     }
 
     public int getCookTime() {
-        return data.get(2);
+        return data.get(0);
     }
 
     public int getCookTimeTotal() {
-        return data.get(3);
+        return data.get(1);
     }
 
     private ItemStack getFluidFromBucket(ItemStack stack) {
