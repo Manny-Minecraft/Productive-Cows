@@ -1,4 +1,7 @@
 {
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "thermal" }
+  ],
   "name": "Lumium",
   "tier": 5,
   "fluid": "productivecows:molten_lumium",

@@ -1,4 +1,7 @@
 {
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "thermal" }
+  ],
   "name": "Nickel",
   "tier": 3,
   "fluid": "productivecows:molten_nickel",

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -33,8 +32,14 @@ public class MaterialCowDataLoader extends SimpleJsonResourceReloadListener {
     protected void apply(Map<ResourceLocation, JsonElement> objectMap, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         Map<ResourceLocation, CowDefinition> newDefinitions = new HashMap<>();
 
+        var ops = makeConditionalOps();
         objectMap.forEach((location, jsonElement) -> {
-            CowDefinition.CODEC.parse(JsonOps.INSTANCE, jsonElement)
+            // e.g. cows for other mods' metals, which only load when that mod is installed
+            if (!net.neoforged.neoforge.common.conditions.ICondition.conditionsMatched(ops, jsonElement)) {
+                LOGGER.debug("Skipping material cow definition {}: conditions not met", location);
+                return;
+            }
+            CowDefinition.CODEC.parse(ops, jsonElement)
                     .resultOrPartial(error -> LOGGER.error("Failed to parse material cow definition {}: {}", location, error))
                     .ifPresent(definition -> {
                         String problem = validate(definition);

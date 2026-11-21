@@ -1,4 +1,13 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:or",
+      "values": [
+        { "type": "neoforge:mod_loaded", "modid": "mekanism" },
+        { "type": "neoforge:mod_loaded", "modid": "thermal" }
+      ]
+    }
+  ],
   "name": "Tin",
   "tier": 2,
   "fluid": "productivecows:molten_tin",

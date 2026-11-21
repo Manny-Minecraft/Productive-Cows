@@ -1,4 +1,7 @@
 {
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "mekanism" }
+  ],
   "name": "Uranium",
   "tier": 4,
   "fluid": "productivecows:molten_uranium",

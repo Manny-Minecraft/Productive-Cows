@@ -1,4 +1,7 @@
 {
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "thermal" }
+  ],
   "name": "Electrum",
   "tier": 4,
   "fluid": "productivecows:molten_electrum",
