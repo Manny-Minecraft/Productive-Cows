@@ -24,8 +24,22 @@ import java.util.List;
 
 public class CapturedCowItem extends Item {
 
+    /** Game time (ticks) until which the captured cow cannot breed in a Breeding Cage. */
+    public static final String BREEDING_COOLDOWN_UNTIL = "BreedingCooldownUntil";
+    /** Old countdown that was never decremented: read as expired and removed by the Breeding Cage. */
+    public static final String LEGACY_BREEDING_COOLDOWN = "BreedingCooldown";
+
     public CapturedCowItem(Properties properties) {
         super(properties);
+    }
+
+    /** Remaining breeding cooldown in ticks, 0 when the cow can breed. */
+    public static long getBreedingCooldownRemaining(ItemStack stack, long gameTime) {
+        CustomData customData = stack.get(DataComponents.ENTITY_DATA);
+        if (customData == null || !customData.contains(BREEDING_COOLDOWN_UNTIL)) {
+            return 0;
+        }
+        return Math.max(0, customData.getUnsafe().getLong(BREEDING_COOLDOWN_UNTIL) - gameTime);
     }
 
     @Override
@@ -135,7 +149,9 @@ public class CapturedCowItem extends Item {
                                 .withStyle(ChatFormatting.GREEN));
                     }
 
-                    int breedingCooldown = tag.getInt("BreedingCooldown");
+                    Level level = context.level();
+                    int breedingCooldown = level == null ? 0
+                            : (int) Math.min(Integer.MAX_VALUE, getBreedingCooldownRemaining(stack, level.getGameTime()));
                     if (breedingCooldown > 0) {
                         int minutes = breedingCooldown / 1200;
                         int seconds = (breedingCooldown % 1200) / 20;
