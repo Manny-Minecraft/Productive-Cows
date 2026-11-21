@@ -3,8 +3,8 @@
   "tier": 3,
   "fluid": "productivecows:molten_osmium",
   "hex_color": "#9CB7C7",
-  "breedChance": 0.15,
-  "baseYield": 100,
+  "breed_chance": 0.15,
+  "base_yield": 100,
   "parent1": "productivecows:iron",
   "parent2": "productivecows:quartz",
   "cooling_result_tag": "c:ingots/osmium"

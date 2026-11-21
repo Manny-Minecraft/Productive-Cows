@@ -3,9 +3,9 @@
   "tier": 6,
   "fluid": "productivecows:molten_enderium",
   "hex_color": "#186A6B",
-  "breedChance": 0.01,
-  "baseYield": 100,
+  "breed_chance": 0.01,
+  "base_yield": 100,
   "parent1": "productivecows:lead",
-  "parent2": "productivecows:diamond",
+  "parent2": "productivecows:ender",
   "cooling_result_tag": "c:ingots/enderium"
 }

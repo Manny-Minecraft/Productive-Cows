@@ -3,8 +3,8 @@
   "tier": 3,
   "fluid": "productivecows:molten_bronze",
   "hex_color": "#D4943E",
-  "breedChance": 0.05,
-  "baseYield": 100,
+  "breed_chance": 0.05,
+  "base_yield": 100,
   "parent1": "productivecows:copper",
   "parent2": "productivecows:tin",
   "cooling_result_tag": "c:ingots/bronze"

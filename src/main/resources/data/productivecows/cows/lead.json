@@ -3,9 +3,9 @@
   "tier": 2,
   "fluid": "productivecows:molten_lead",
   "hex_color": "#79808E",
-  "breedChance": 0.2,
-  "baseYield": 100,
-  "parent1": "productivecows:iron",
+  "breed_chance": 0.2,
+  "base_yield": 100,
+  "parent1": "productivecows:tin",
   "parent2": "productivecows:obsidian",
   "cooling_result_tag": "c:ingots/lead"
 }

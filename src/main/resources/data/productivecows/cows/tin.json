@@ -3,9 +3,9 @@
   "tier": 2,
   "fluid": "productivecows:molten_tin",
   "hex_color": "#AAB9C4",
-  "breedChance": 0.2,
-  "baseYield": 100,
-  "parent1": "productivecows:iron",
-  "parent2": "productivecows:coal",
+  "breed_chance": 0.2,
+  "base_yield": 100,
+  "parent1": "productivecows:copper",
+  "parent2": "productivecows:clay",
   "cooling_result_tag": "c:ingots/tin"
 }
