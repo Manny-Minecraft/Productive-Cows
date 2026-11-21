@@ -3,9 +3,11 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id 'net.neoforged.moddev' version '2.0.141'
+    id "me.modmuss50.mod-publish-plugin" version "0.8.4"
 }
 
-version = mod_version
+// The jar keeps the Minecraft version in its name (productivecows-1.21.1-1.0.2.jar)
+version = "${minecraft_version}-${mod_version}"
 group = mod_group_id
 
 repositories {
@@ -184,5 +186,48 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+// Release notes are read from changelogs/<version>.md: publishing stops if that file is missing
+def changelogFile = file("changelogs/${mod_version}.md")
+if (!changelogFile.exists() && gradle.startParameter.taskNames.any { it.toLowerCase().contains("publishmods") }) {
+    throw new GradleException("Missing changelog: create changelogs/${mod_version}.md before publishing")
+}
+def releaseChangelog = changelogFile.exists() ? changelogFile.getText("UTF-8") : ""
+
+publishMods {
+    file = jar.archiveFile
+    changelog = releaseChangelog
+    // DRY_RUN=true builds and checks the release without uploading anything
+    dryRun = providers.environmentVariable("DRY_RUN").map { it == "true" }.orElse(false)
+    type = STABLE
+    modLoaders.add("neoforge")
+
+    curseforge {
+        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+        projectId = "1554716"
+        minecraftVersions.add(minecraft_version)
+        clientRequired = true
+        serverRequired = true
+        displayName = "${mod_id}-${minecraft_version}-${mod_version}.jar"
+    }
+
+    // Skipped until modrinth_project_id is set in gradle.properties
+    if (project.findProperty("modrinth_project_id")) {
+        modrinth {
+            accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+            projectId = modrinth_project_id
+            minecraftVersions.add(minecraft_version)
+        }
+    }
+
+    // GitHub release with the jar and the same changelog; the token is provided by GitHub Actions
+    github {
+        accessToken = providers.environmentVariable("GITHUB_TOKEN")
+        repository = "Manny-Minecraft/Productive-Cows"
+        commitish = "mc1.21.1/dev"
+        tagName = "mc${minecraft_version}-${mod_version}"
+        displayName = "Productive Cows ${mod_version} for mc${minecraft_version}"
     }
 }
