@@ -5,7 +5,6 @@ import com.productivecows.entity.MaterialCowEntity;
 import com.productivecows.fluid.ModFluids;
 import com.productivecows.network.NetworkRegistry;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -32,10 +31,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -119,15 +115,7 @@ public class ProductiveCows {
                             String idStr = tag.getString("CowDefinitionId");
                             net.minecraft.resources.ResourceLocation defId = net.minecraft.resources.ResourceLocation.tryParse(idStr);
                             if (defId != null) {
-                                CowDefinition def = null;
-                                try {
-                                    def = com.productivecows.data.MaterialCowDataLoader.getDefinition(defId);
-                                } catch (Exception e) {}
-                                if (def == null) {
-                                    try {
-                                        def = com.productivecows.network.ClientCowData.getDefinition(defId);
-                                    } catch (Exception e) {}
-                                }
+                                CowDefinition def = getDisplayDefinition(defId);
                                 if (def != null) {
                                     return Component.translatable("item.productivecows.spawn_egg_format", def.name());
                                 }
@@ -248,6 +236,16 @@ public class ProductiveCows {
         return com.productivecows.data.MaterialCowDataLoader.getDefinitions();
     }
 
+    /**
+     * Definition used for names and tooltips, where no level is at hand: the client's synced copy first
+     * (always current for the connected server), then the server data (dedicated server, or before the sync).
+     */
+    @org.jetbrains.annotations.Nullable
+    public static CowDefinition getDisplayDefinition(net.minecraft.resources.ResourceLocation id) {
+        CowDefinition def = com.productivecows.network.ClientCowData.getDefinition(id);
+        return def != null ? def : com.productivecows.data.MaterialCowDataLoader.getDefinition(id);
+    }
+
     // For client-side display only (screens, JEI, creative tabs); game logic uses getDefinitions(level)
     public static java.util.Map<net.minecraft.resources.ResourceLocation, CowDefinition> getActiveDefinitions() {
         var clientDefs = com.productivecows.network.ClientCowData.getDefinitions();
@@ -257,13 +255,8 @@ public class ProductiveCows {
         return com.productivecows.data.MaterialCowDataLoader.getDefinitions();
     }
 
-    // The constructor for the mod class is the first code that is run when your mod is loaded.
-    // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public ProductiveCows(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the common setup method for modloading
-        modEventBus.addListener(this::commonSetup);
-
-        // Register static event subscribers
+// Register static event subscribers
         modEventBus.register(com.productivecows.event.ModBusEvents.class);
 
         // Register fluid registries
@@ -281,12 +274,7 @@ public class ProductiveCows {
         BLOCK_ENTITY_TYPES.register(modEventBus);
         MENU_TYPES.register(modEventBus);
 
-        // Register ourselves for server and other game events we are interested in.
-        // Note that this is necessary if and only if we want *this* class (ProductiveCows) to respond directly to events.
-        // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
-        NeoForge.EVENT_BUS.register(this);
-
-        if (net.neoforged.fml.loading.FMLEnvironment.dist == Dist.CLIENT) {
+if (net.neoforged.fml.loading.FMLEnvironment.dist == Dist.CLIENT) {
             NeoForge.EVENT_BUS.addListener(com.productivecows.client.ClientModBusEvents::onLoggingOut);
         }
 
@@ -296,28 +284,8 @@ public class ProductiveCows {
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        // Some common setup code
-        LOGGER.info("MaterialCows Common Setup");
-    }
-
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
-    }
-
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
     @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
     public static class ClientModEvents {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            // Some client setup code
-            LOGGER.info("HELLO FROM CLIENT SETUP");
-            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
-        }
-
         @SubscribeEvent
         public static void registerRenderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(ADVANCED_COOLER_BE.get(), com.productivecows.client.renderer.CoolerBlockEntityRenderer::new);

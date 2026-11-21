@@ -40,7 +40,8 @@ public class UpgradeItem extends Item {
         if (BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace().equals("productivecows")) {
             IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, context.getClickedFace());
             if (itemHandler != null) {
-                ItemStack remainder = ItemHandlerHelper.insertItem(itemHandler, stack.copy(), false);
+                // The client only simulates, so its copy of the machine inventory stays untouched until the server syncs it
+                ItemStack remainder = ItemHandlerHelper.insertItem(itemHandler, stack.copy(), level.isClientSide);
                 if (remainder.getCount() != stack.getCount()) {
                     if (!level.isClientSide) {
                         player.setItemInHand(context.getHand(), remainder);

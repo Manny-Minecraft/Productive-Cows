@@ -30,8 +30,19 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      - name: Refuse to publish an already released version
+        if: ${{ !inputs.dry_run }}
+        run: |
+          mc=$(grep '^minecraft_version=' gradle.properties | cut -d= -f2 | tr -d '\r')
+          version=$(grep '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '\r')
+          tag="mc${mc}-${version}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" > /dev/null; then
+            echo "::error::Release tag ${tag} already exists: bump mod_version before publishing"
+            exit 1
+          fi
+
       - name: Publish Mods
-        env:
+env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

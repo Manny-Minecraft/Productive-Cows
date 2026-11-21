@@ -81,7 +81,7 @@ public class CowConversionCategory implements IRecipeCategory<CowConversionRecip
         guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "->", 75, 19, 0x888888, false);
         
         // Draw "Right Click" text above catalyst
-        Component rightClickText = Component.literal("Right Click");
+        Component rightClickText = Component.translatable("jei.productivecows.right_click");
         guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, rightClickText, 35, 4, 0x555555, false);
     }
 

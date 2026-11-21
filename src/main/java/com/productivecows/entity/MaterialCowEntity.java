@@ -178,17 +178,17 @@ public class MaterialCowEntity extends Cow {
                                 this.setMilkingCooldown(24000);
                                 return InteractionResult.SUCCESS;
                             } else {
-                                player.sendSystemMessage(Component.literal("The fluid '" + fluidId + "' does not have an associated bucket registered!"));
+                                player.sendSystemMessage(Component.translatable("message.productivecows.cow.no_bucket", fluidId.toString()));
                             }
                         } else {
-                            player.sendSystemMessage(Component.literal("The fluid '" + fluidId + "' is not registered or does not exist!"));
+                            player.sendSystemMessage(Component.translatable("message.productivecows.cow.unknown_fluid", fluidId.toString()));
                         }
                     } else {
                         int remainingSeconds = this.getMilkingCooldown() / 20;
-                        player.sendSystemMessage(Component.literal("This cow is not ready to be milked! Cooldown remaining: " + remainingSeconds + " seconds."));
+                        player.sendSystemMessage(Component.translatable("message.productivecows.cow.not_ready", remainingSeconds));
                     }
                 } else {
-                    player.sendSystemMessage(Component.literal("This cow has no dynamic material definition assigned!"));
+                    player.sendSystemMessage(Component.translatable("message.productivecows.cow.no_definition"));
                 }
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);

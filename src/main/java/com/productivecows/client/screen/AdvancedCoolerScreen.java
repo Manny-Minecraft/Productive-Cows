@@ -135,7 +135,7 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
             List<Component> text = new ArrayList<>();
             int energyAmount = menu.getEnergyStored();
             int energyMax = menu.getMaxEnergyStored();
-            text.add(Component.literal("Energy (RF)").withStyle(net.minecraft.ChatFormatting.RED));
+            text.add(Component.translatable("gui.productivecows.energy").withStyle(net.minecraft.ChatFormatting.RED));
             text.add(Component.literal(energyAmount + " / " + energyMax + " RF").withStyle(net.minecraft.ChatFormatting.GRAY));
             
             // If currently cooling, show the dynamic RF/t consumption rate
@@ -150,9 +150,9 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
                 float energyMultiplier = switch(energyUpgrades) { case 1 -> 0.7f; case 2 -> 0.5f; case 3 -> 0.3f; default -> 1.0f; };
                 int currentRfCost = (int)(baseEnergyPerTick * efficiencyMultiplier * energyMultiplier);
 
-                text.add(Component.literal("Consuming: " + currentRfCost + " RF/t").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                text.add(Component.translatable("gui.productivecows.consuming", currentRfCost).withStyle(net.minecraft.ChatFormatting.YELLOW));
             } else {
-                text.add(Component.literal("Consuming: 0 RF/t (Idle)").withStyle(net.minecraft.ChatFormatting.GREEN));
+                text.add(Component.translatable("gui.productivecows.idle").withStyle(net.minecraft.ChatFormatting.GREEN));
             }
             guiGraphics.renderComponentTooltip(this.font, text, mouseX, mouseY);
         }

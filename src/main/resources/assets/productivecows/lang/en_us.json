@@ -3,8 +3,6 @@
   "itemGroup.productivecows.liquids": "Productive Cows - Liquids",
   "itemGroup.productivecows.spawn_eggs": "Productive Cows - Spawn Eggs",
   "item.productivecows.spawn_egg_format": "%s Spawn Egg",
-  "block.productivecows.example_block": "Example Block",
-  "item.productivecows.example_item": "Example Item",
   "item.productivecows.material_cow_spawn_egg": "Productive Cow Spawn Egg",
   "entity.productivecows.material_cow": "Productive Cow",
   "block.productivecows.cow_cage": "Cow Cage",
@@ -130,5 +128,15 @@
   "block.productivecows.molten_invar": "Molten Invar",
   "block.productivecows.molten_signalum": "Molten Signalum",
   "block.productivecows.molten_lumium": "Molten Lumium",
-  "block.productivecows.molten_enderium": "Molten Enderium"
+  "block.productivecows.molten_enderium": "Molten Enderium",
+  "tooltip.productivecows.captured_cow.unknown": "Cow: %s",
+  "message.productivecows.cow.no_bucket": "The fluid '%s' has no bucket registered!",
+  "message.productivecows.cow.unknown_fluid": "The fluid '%s' is not registered or does not exist!",
+  "message.productivecows.cow.not_ready": "This cow is not ready to be milked! Cooldown remaining: %s seconds.",
+  "message.productivecows.cow.no_definition": "This cow has no material assigned!",
+  "gui.productivecows.energy": "Energy (RF)",
+  "gui.productivecows.consuming": "Consuming: %s RF/t",
+  "gui.productivecows.idle": "Consuming: 0 RF/t (Idle)",
+  "gui.productivecows.producing": "Producing: +%s RF/t",
+  "jei.productivecows.right_click": "Right Click"
 }

@@ -149,7 +149,7 @@ public class CapturedCowItem extends Item {
                         tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.tier", def.tier())
                                 .withStyle(ChatFormatting.GOLD));
                     } else {
-                        tooltip.add(Component.literal("Cow: " + defId.getPath()).withStyle(ChatFormatting.RED));
+                        tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.unknown", defId.getPath()).withStyle(ChatFormatting.RED));
                     }
                     if (tag.getInt(AGE) < 0) {
                         tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.calf").withStyle(ChatFormatting.AQUA));
@@ -200,10 +200,7 @@ public class CapturedCowItem extends Item {
                 String idStr = tag.getString("CowDefinitionId");
                 ResourceLocation defId = ResourceLocation.tryParse(idStr);
                 if (defId != null) {
-                    CowDefinition def = com.productivecows.data.MaterialCowDataLoader.getDefinition(defId);
-                    if (def == null) {
-                        def = com.productivecows.network.ClientCowData.getDefinition(defId);
-                    }
+                    CowDefinition def = ProductiveCows.getDisplayDefinition(defId);
                     if (def != null) {
                         return Component.literal(def.name());
                     }

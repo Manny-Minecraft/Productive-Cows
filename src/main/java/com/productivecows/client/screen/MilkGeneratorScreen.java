@@ -101,13 +101,13 @@ public class MilkGeneratorScreen extends AbstractContainerScreen<MilkGeneratorMe
             List<Component> text = new ArrayList<>();
             int energyAmount = menu.getEnergyStored();
             int energyMax = menu.getMaxEnergyStored();
-            text.add(Component.literal("Energy (RF)").withStyle(net.minecraft.ChatFormatting.RED));
+            text.add(Component.translatable("gui.productivecows.energy").withStyle(net.minecraft.ChatFormatting.RED));
             text.add(Component.literal(energyAmount + " / " + energyMax + " RF").withStyle(net.minecraft.ChatFormatting.GRAY));
             
             // Show generation rate if active
             int milkAmount = menu.getFluidAmount();
             if (milkAmount > 0 && energyAmount < energyMax) {
-                text.add(Component.literal("Producing: +40 RF/t").withStyle(net.minecraft.ChatFormatting.GREEN));
+                text.add(Component.translatable("gui.productivecows.producing", 40).withStyle(net.minecraft.ChatFormatting.GREEN));
             }
             guiGraphics.renderComponentTooltip(this.font, text, mouseX, mouseY);
         }

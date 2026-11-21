@@ -26,7 +26,7 @@ public class CoolerComponentProvider implements IBlockComponentProvider, IServer
             int cookTimeTotal = data.getInt("CookTimeTotal");
             if (cookTime > 0 && cookTimeTotal > 0) {
                 int percent = (cookTime * 100) / cookTimeTotal;
-                tooltip.add(Component.literal("Cooling: " + percent + "%").withStyle(net.minecraft.ChatFormatting.GREEN));
+                tooltip.add(Component.translatable("tooltip.productivecows.jade.progress", percent).withStyle(net.minecraft.ChatFormatting.GREEN));
             }
         }
     }

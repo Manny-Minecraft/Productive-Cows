@@ -469,10 +469,12 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        this.itemHandler.deserializeNBT(registries, tag.getCompound("Inventory"));
-        if (this.itemHandler.getSlots() < 6) {
-            this.itemHandler.setSize(6);
+        CompoundTag inventory = tag.getCompound("Inventory");
+        if (inventory.getInt("Size") < 6) {
+            // Saves from before the energy upgrade slot: widen the inventory before reading so no item is dropped
+            inventory.putInt("Size", 6);
         }
+        this.itemHandler.deserializeNBT(registries, inventory);
         this.fluidTank.readFromNBT(registries, tag.getCompound("FluidTank"));
         this.energyStorage.setEnergy(tag.getInt("Energy"));
         this.cookTime = tag.getInt("CookTime");
