@@ -23,3 +23,6 @@ run
 # Private Roadmap file
 ROADMAP.MD
 roadmap.md
+
+# Modsmith (local docs)
+.modsmith/
