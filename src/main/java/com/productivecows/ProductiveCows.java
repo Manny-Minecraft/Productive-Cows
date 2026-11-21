@@ -251,9 +251,6 @@ public class ProductiveCows {
         // Register the common setup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-        // Register configuration
-        modContainer.registerConfig(net.neoforged.fml.config.ModConfig.Type.COMMON, com.productivecows.Config.SPEC);
-
         // Register static event subscribers
         modEventBus.register(com.productivecows.event.ModBusEvents.class);
 
@@ -277,7 +274,9 @@ public class ProductiveCows {
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
 
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
+        // Balance values live in the per-world server config (serverconfig/productivecows-server.toml),
+        // which servers sync to clients. Register the spec only once: a second COMMON registration
+        // created a config/productivecows-common.toml that the server file silently overrode.
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
     }
 
