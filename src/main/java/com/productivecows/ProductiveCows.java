@@ -278,7 +278,7 @@ if (net.neoforged.fml.loading.FMLEnvironment.dist == Dist.CLIENT) {
             NeoForge.EVENT_BUS.addListener(com.productivecows.client.ClientModBusEvents::onLoggingOut);
         }
 
-        // Balance values live in the per-world server config (serverconfig/productivecows-server.toml),
+        // Balance values live in the server config (config/productivecows-server.toml on NeoForge 21.1),
         // which servers sync to clients. Register the spec only once: a second COMMON registration
         // created a config/productivecows-common.toml that the server file silently overrode.
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
