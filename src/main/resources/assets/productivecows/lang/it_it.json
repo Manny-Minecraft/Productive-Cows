@@ -138,5 +138,7 @@
   "gui.productivecows.consuming": "Consumo: %s RF/t",
   "gui.productivecows.idle": "Consumo: 0 RF/t (inattivo)",
   "gui.productivecows.producing": "Produzione: +%s RF/t",
-  "jei.productivecows.right_click": "Clic destro"
+  "jei.productivecows.right_click": "Clic destro",
+  "config.jade.plugin_productivecows.cow_cooldowns": "Productive Cows: Tempi delle Mucche",
+  "config.jade.plugin_productivecows.cooler_info": "Productive Cows: Info Raffreddatori"
 }

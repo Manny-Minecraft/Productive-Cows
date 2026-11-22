@@ -138,5 +138,7 @@
   "gui.productivecows.consuming": "Consuming: %s RF/t",
   "gui.productivecows.idle": "Consuming: 0 RF/t (Idle)",
   "gui.productivecows.producing": "Producing: +%s RF/t",
-  "jei.productivecows.right_click": "Right Click"
+  "jei.productivecows.right_click": "Right Click",
+  "config.jade.plugin_productivecows.cow_cooldowns": "Productive Cows: Cow Cooldowns",
+  "config.jade.plugin_productivecows.cooler_info": "Productive Cows: Cooler Info"
 }
