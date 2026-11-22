@@ -154,7 +154,7 @@ public class MaterialCowEntity extends Cow {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        // Milking logic with empty bucket
+        // Milking logic with empty bucket; feedback goes to the action bar, not the chat
         if (itemstack.is(Items.BUCKET) && !this.isBaby()) {
             if (!this.level().isClientSide) {
                 CowDefinition definition = getCowDefinition();
@@ -178,17 +178,17 @@ public class MaterialCowEntity extends Cow {
                                 this.setMilkingCooldown(24000);
                                 return InteractionResult.SUCCESS;
                             } else {
-                                player.sendSystemMessage(Component.translatable("message.productivecows.cow.no_bucket", fluidId.toString()));
+                                player.displayClientMessage(Component.translatable("message.productivecows.cow.no_bucket", fluidId.toString()), true);
                             }
                         } else {
-                            player.sendSystemMessage(Component.translatable("message.productivecows.cow.unknown_fluid", fluidId.toString()));
+                            player.displayClientMessage(Component.translatable("message.productivecows.cow.unknown_fluid", fluidId.toString()), true);
                         }
                     } else {
                         int remainingSeconds = this.getMilkingCooldown() / 20;
-                        player.sendSystemMessage(Component.translatable("message.productivecows.cow.not_ready", remainingSeconds));
+                        player.displayClientMessage(Component.translatable("message.productivecows.cow.not_ready", remainingSeconds), true);
                     }
                 } else {
-                    player.sendSystemMessage(Component.translatable("message.productivecows.cow.no_definition"));
+                    player.displayClientMessage(Component.translatable("message.productivecows.cow.no_definition"), true);
                 }
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
