@@ -58,11 +58,10 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
         if (fluidAmount > 0 && fluidMax > 0 && menu.getBlockEntity() instanceof AdvancedCoolerBlockEntity cooler) {
             net.neoforged.neoforge.fluids.capability.templates.FluidTank tank = cooler.getFluidTank();
             if (!tank.getFluid().isEmpty()) {
-                int color = getFluidColor(tank.getFluid().getFluid());
-                int fillHeight = Math.min(52, (fluidAmount * 52) / fluidMax);
+int fillHeight = Math.min(52, (fluidAmount * 52) / fluidMax);
                 int fluidTopY = fluidGaugeY + 52 - fillHeight;
                 // Draw colored fluid column taking the entire space
-                guiGraphics.fill(fluidGaugeX, fluidTopY, fluidGaugeX + 42, fluidGaugeY + 52, 0xFF000000 | color);
+                FluidGuiRenderer.render(guiGraphics, tank.getFluid(), fluidGaugeX, fluidTopY, 42, fluidGaugeY + 52 - fluidTopY);
             }
         }
 
@@ -93,18 +92,6 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
     }
 
 
-
-    private int getFluidColor(net.minecraft.world.level.material.Fluid fluid) {
-        ResourceLocation key = BuiltInRegistries.FLUID.getKey(fluid);
-        for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
-            if (def.fluidId().equals(key)) {
-                return def.hexColor();
-            }
-        }
-        if (fluid == net.minecraft.world.level.material.Fluids.WATER) return 0x3F76E4;
-        if (fluid == net.minecraft.world.level.material.Fluids.LAVA) return 0xFF3C00;
-        return 0x948A7A;
-    }
 
     private void renderGaugesTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;

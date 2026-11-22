@@ -56,7 +56,8 @@ public class MilkGeneratorScreen extends AbstractContainerScreen<MilkGeneratorMe
         if (amount > 0 && capacity > 0) {
             int fillHeight = Math.min(52, (amount * 52) / capacity);
             int fluidTopY = fluidGaugeY + 52 - fillHeight;
-            guiGraphics.fill(fluidGaugeX, fluidTopY, fluidGaugeX + 42, fluidGaugeY + 52, 0xFFFFFFFF); // White for milk
+            net.neoforged.neoforge.fluids.FluidStack milk = new net.neoforged.neoforge.fluids.FluidStack(com.productivecows.fluid.ModFluids.LIQUID_MILK.source().get(), amount);
+            FluidGuiRenderer.render(guiGraphics, milk, fluidGaugeX, fluidTopY, 42, fluidGaugeY + 52 - fluidTopY);
         }
 
         // --- GAUGE 2: RF ENERGY STORAGE (Right: X=120, Y=16, Width=14, Height=52) ---

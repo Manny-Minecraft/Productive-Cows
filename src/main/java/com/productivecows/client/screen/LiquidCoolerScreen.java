@@ -58,11 +58,10 @@ public class LiquidCoolerScreen extends AbstractContainerScreen<LiquidCoolerMenu
             FluidTank tank = cooler.getFluidTank();
             int amount = tank.getFluidAmount();
             if (amount > 0 && !tank.getFluid().isEmpty()) {
-                int color = getFluidColor(tank.getFluid().getFluid());
-                int fillHeight = Math.min(52, (amount * 52) / 8000);
+int fillHeight = Math.min(52, (amount * 52) / 8000);
                 
                 int fluidTopY = fluidGaugeY + 52 - fillHeight;
-                guiGraphics.fill(fluidGaugeX, fluidTopY, fluidGaugeX + 42, fluidGaugeY + 52, 0xFF000000 | color);
+                FluidGuiRenderer.render(guiGraphics, tank.getFluid(), fluidGaugeX, fluidTopY, 42, fluidGaugeY + 52 - fluidTopY);
             }
         }
 
@@ -82,18 +81,6 @@ public class LiquidCoolerScreen extends AbstractContainerScreen<LiquidCoolerMenu
 
 
 
-
-    private int getFluidColor(net.minecraft.world.level.material.Fluid fluid) {
-        ResourceLocation key = BuiltInRegistries.FLUID.getKey(fluid);
-        for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
-            if (def.fluidId().equals(key)) {
-                return def.hexColor();
-            }
-        }
-        if (fluid == net.minecraft.world.level.material.Fluids.WATER) return 0x3F76E4;
-        if (fluid == net.minecraft.world.level.material.Fluids.LAVA) return 0xFF3C00;
-        return 0x948A7A;
-    }
 
     private void renderFluidTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
