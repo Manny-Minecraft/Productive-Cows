@@ -82,7 +82,10 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    private int milkingTimer = 400;
+    /** Ticks between two milkings. */
+    public static final int MILKING_CYCLE_TICKS = 400;
+
+    private int milkingTimer = MILKING_CYCLE_TICKS;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
@@ -194,7 +197,7 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                         setChanged();
                     } else {
                         fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                        milkingTimer = 400;
+                        milkingTimer = MILKING_CYCLE_TICKS;
                         setChanged();
                     }
                 }
@@ -209,13 +212,13 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                     setChanged();
                 } else {
                     fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                    milkingTimer = 400;
+                    milkingTimer = MILKING_CYCLE_TICKS;
                     setChanged();
                 }
             }
         } else {
-            if (milkingTimer != 400) {
-                milkingTimer = 400;
+            if (milkingTimer != MILKING_CYCLE_TICKS) {
+                milkingTimer = MILKING_CYCLE_TICKS;
                 setChanged();
             }
         }

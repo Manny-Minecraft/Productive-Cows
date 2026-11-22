@@ -67,7 +67,7 @@
   "item.productivecows.material_cow_spawn_egg": "Uovo Generatore di Mucca dei Materiali",
   "tooltip.productivecows.jade.fluid": "Fluido: %s mB / %s mB",
   "tooltip.productivecows.jade.progress": "Raffreddamento: %s%%",
-  "gui.productivecows.empty_milk_tank": "Serbatoio Vuoto (Latte)",
+  "gui.productivecows.empty_milk_tank": "Serbatoio Vuoto",
   "fluid.productivecows.milk_name": "Latte",
   "fluid.productivecows.liquid_clay": "Argilla Liquida",
   "item.productivecows.liquid_clay_bucket": "Secchio di Argilla Liquida",
@@ -140,5 +140,15 @@
   "gui.productivecows.producing": "Produzione: +%s RF/t",
   "jei.productivecows.right_click": "Clic destro",
   "config.jade.plugin_productivecows.cow_cooldowns": "Productive Cows: Tempi delle Mucche",
-  "config.jade.plugin_productivecows.cooler_info": "Productive Cows: Info Raffreddatori"
+  "config.jade.plugin_productivecows.cooler_info": "Productive Cows: Info Raffreddatori",
+  "jei.productivecows.cooling": "Raffreddamento",
+  "jei.productivecows.cooling_cost": "%s mB · %s s",
+  "jei.productivecows.breeding": "Riproduzione",
+  "jei.productivecows.chance": "%s%%",
+  "jei.productivecows.conversion": "Conversione Mucca",
+  "jei.productivecows.milking": "Mungitura",
+  "jei.productivecows.milking_cycle": "%s mB ogni %s s",
+  "jei.productivecows.generator_fuel": "Carburante Generatore",
+  "jei.productivecows.fuel_energy": "%s RF/mB",
+  "jei.productivecows.fuel_rate": "%s RF/t"
 }

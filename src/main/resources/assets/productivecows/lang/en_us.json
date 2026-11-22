@@ -37,7 +37,7 @@
   "container.productivecows.milk_generator": "Milk Generator",
   "container.productivecows.advanced_cooler": "Advanced Cooler",
   "gui.productivecows.empty_tank": "Empty Tank",
-  "gui.productivecows.empty_milk_tank": "Empty Tank (Milk)",
+  "gui.productivecows.empty_milk_tank": "Empty Tank",
   "fluid.productivecows.milk_name": "Milk",
   "fluid.productivecows.liquid_clay": "Liquid Clay",
   "block.productivecows.liquid_clay": "Liquid Clay",
@@ -140,5 +140,15 @@
   "gui.productivecows.producing": "Producing: +%s RF/t",
   "jei.productivecows.right_click": "Right Click",
   "config.jade.plugin_productivecows.cow_cooldowns": "Productive Cows: Cow Cooldowns",
-  "config.jade.plugin_productivecows.cooler_info": "Productive Cows: Cooler Info"
+  "config.jade.plugin_productivecows.cooler_info": "Productive Cows: Cooler Info",
+  "jei.productivecows.cooling": "Cooling",
+  "jei.productivecows.cooling_cost": "%s mB · %s s",
+  "jei.productivecows.breeding": "Breeding",
+  "jei.productivecows.chance": "%s%%",
+  "jei.productivecows.conversion": "Cow Conversion",
+  "jei.productivecows.milking": "Milking",
+  "jei.productivecows.milking_cycle": "%s mB every %s s",
+  "jei.productivecows.generator_fuel": "Generator Fuel",
+  "jei.productivecows.fuel_energy": "%s RF/mB",
+  "jei.productivecows.fuel_rate": "%s RF/t"
 }

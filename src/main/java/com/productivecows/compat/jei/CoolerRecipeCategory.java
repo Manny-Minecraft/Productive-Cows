@@ -1,39 +1,31 @@
 package com.productivecows.compat.jei;
 
+import com.productivecows.Config;
 import com.productivecows.ProductiveCows;
 import com.productivecows.data.CowDefinition;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.fluids.FluidStack;
 
+/** Cooling a cow's fluid into its material: fluid -> arrow -> item, with the Basic Cooler's cost and time. */
 public class CoolerRecipeCategory implements IRecipeCategory<CowDefinition> {
 
-    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ProductiveCows.MODID, "cooler");
     public static final RecipeType<CowDefinition> COOLER_TYPE = RecipeType.create(ProductiveCows.MODID, "cooler", CowDefinition.class);
+    private static final int FLUID_PER_ITEM = 1000;
 
-    private final IDrawable background;
     private final IDrawable icon;
-    private final IDrawable tankOverlay;
 
     public CoolerRecipeCategory(IGuiHelper guiHelper) {
-        // We make a 120x60 GUI
-        this.background = guiHelper.createBlankDrawable(120, 60);
-        this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ProductiveCows.ADVANCED_COOLER_ITEM.get()));
-        this.tankOverlay = guiHelper.drawableBuilder(ResourceLocation.fromNamespaceAndPath(ProductiveCows.MODID, "textures/gui/liquid_cooler.png"), 9, 16, 18, 52).build();
+        this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ProductiveCows.LIQUID_COOLER_ITEM.get()));
     }
 
     @Override
@@ -43,80 +35,48 @@ public class CoolerRecipeCategory implements IRecipeCategory<CowDefinition> {
 
     @Override
     public Component getTitle() {
-        return Component.translatable("block.productivecows.advanced_cooler");
-    }
-
-    @Override
-    public IDrawable getBackground() {
-        return this.background;
+        return Component.translatable("jei.productivecows.cooling");
     }
 
     @Override
     public IDrawable getIcon() {
-        return this.icon;
+        return icon;
+    }
+
+    @Override
+    public int getWidth() {
+        return 100;
+    }
+
+    @Override
+    public int getHeight() {
+        return 42;
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CowDefinition recipe, IFocusGroup focuses) {
-        if (recipe.fluidId() != null) {
-            Fluid fluid = BuiltInRegistries.FLUID.get(recipe.fluidId());
-            if (fluid != null && fluid != net.minecraft.world.level.material.Fluids.EMPTY) {
-                // Fluid input slot (1000 mB)
-                builder.addSlot(RecipeIngredientRole.INPUT, 10, 4)
-                        .addIngredient(NeoForgeTypes.FLUID_STACK, new FluidStack(fluid, 1000))
-                        .setFluidRenderer(8000, false, 18, 52); // We will draw the tank frame in draw()
-            }
+        Fluid fluid = JeiStacks.fluid(recipe);
+        if (fluid != null) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 8, 9)
+                    .addFluidStack(fluid, FLUID_PER_ITEM)
+                    .setFluidRenderer(FLUID_PER_ITEM, false, 16, 16)
+                    .setStandardSlotBackground();
         }
-
-        if (recipe.coolingResult() != null) {
-            net.minecraft.world.item.Item resultItem = BuiltInRegistries.ITEM.get(recipe.coolingResult());
-            if (resultItem != net.minecraft.world.item.Items.AIR) {
-                // Result output slot
-                builder.addSlot(RecipeIngredientRole.OUTPUT, 85, 21)
-                        .addItemStack(new ItemStack(resultItem));
-            }
-        } else if (recipe.coolingResultTag() != null) {
-            net.minecraft.tags.TagKey<net.minecraft.world.item.Item> tagKey = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, ResourceLocation.tryParse(recipe.coolingResultTag()));
-            java.util.List<ItemStack> stacks = new java.util.ArrayList<>();
-            
-            var lvl = net.minecraft.client.Minecraft.getInstance().level;
-            if (lvl != null) {
-                var registry = lvl.registryAccess().registry(net.minecraft.core.registries.Registries.ITEM).orElse(null);
-                if (registry != null) {
-                    var tagItem = registry.getTag(tagKey);
-                    if (tagItem.isPresent()) {
-                        for (net.minecraft.core.Holder<net.minecraft.world.item.Item> holder : tagItem.get()) {
-                            stacks.add(new ItemStack(holder.value()));
-                        }
-                    }
-                }
-            } else {
-                var tagItem = BuiltInRegistries.ITEM.getTag(tagKey);
-                if (tagItem.isPresent()) {
-                    for (net.minecraft.core.Holder<net.minecraft.world.item.Item> holder : tagItem.get()) {
-                        stacks.add(new ItemStack(holder.value()));
-                    }
-                }
-            }
-            
-            if (!stacks.isEmpty()) {
-                builder.addSlot(RecipeIngredientRole.OUTPUT, 85, 21)
-                       .addItemStacks(stacks);
-            }
-        }
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 72, 9)
+                .addItemStacks(JeiStacks.coolingOutputs(recipe))
+                .setOutputSlotBackground();
     }
 
     @Override
-    public void draw(CowDefinition recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        // Draw the tank overlay over the fluid
-        this.tankOverlay.draw(guiGraphics, 9, 3);
-        
-        // Draw an arrow pointing from fluid to item
-        guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, "->", 50, 25, 0x888888, false);
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, CowDefinition recipe, IFocusGroup focuses) {
+        int cookTime = Math.max(1, Config.basicCoolerCookTime);
+        builder.addAnimatedRecipeArrow(cookTime).setPosition(36, 9);
+        builder.addText(Component.translatable("jei.productivecows.cooling_cost", FLUID_PER_ITEM, seconds(cookTime)), 0, 32, getWidth(), 10)
+                .alignHorizontalCenter()
+                .setColor(JeiStacks.TEXT_COLOR);
+    }
 
-        // Draw processing time (the Basic Cooler needs no power)
-        Component timeText = Component.literal((com.productivecows.Config.basicCoolerCookTime / 20) + "s");
-
-        guiGraphics.drawString(net.minecraft.client.Minecraft.getInstance().font, timeText, 40, 45, 0x555555, false);
+    static String seconds(int ticks) {
+        return ticks % 20 == 0 ? String.valueOf(ticks / 20) : String.format(java.util.Locale.ROOT, "%.1f", ticks / 20f);
     }
 }
