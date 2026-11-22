@@ -26,7 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - Minecraft Version: [e.g. 1.21.1]
  - NeoForge Version: [e.g. 21.1.X]
- - MaterialCows Version: [e.g. 1.0.0]
+ - Productive Cows Version: [e.g. 1.0.3]
  - Other mods installed? (List relevant ones like Create, Mekanism, etc.)
 
 **Additional context**
