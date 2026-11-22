@@ -62,7 +62,7 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             if (slot == 0) {
-                return stack.is(Items.MILK_BUCKET) || stack.is(com.productivecows.fluid.ModFluids.LIQUID_MILK.bucket().get());
+                return isFuel(GeneratorFuel.bucketFluid(stack));
             }
             return false; // Slot 1 is output only
         }
@@ -82,12 +82,7 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
     private final FluidTank fluidTank = new FluidTank(4000) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
-            Fluid f = stack.getFluid();
-            if (f == com.productivecows.fluid.ModFluids.LIQUID_MILK.source().get()) {
-                return true;
-            }
-            String name = BuiltInRegistries.FLUID.getKey(f).toString();
-            return name.equals("neoforge:milk") || name.equals("minecraft:milk") || name.endsWith(":milk");
+            return isFuel(stack.getFluid());
         }
 
         @Override
@@ -98,6 +93,12 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
 
     private final CustomEnergyStorage energyStorage = new CustomEnergyStorage(50000, 0, 200);
     private double fractionalMilk = 0.0;
+    /** RF produced in the last tick, shown in the GUI; not saved. */
+    private int currentRate = 0;
+
+    private boolean isFuel(Fluid fluid) {
+        return GeneratorFuel.tier(fluid, com.productivecows.ProductiveCows.getDefinitions(level)) >= 0;
+    }
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
@@ -110,6 +111,8 @@ public class MilkGeneratorBlockEntity extends BlockEntity implements MenuProvide
                 case 3 -> fluidTank.getCapacity();
                 case 4 -> com.productivecows.menu.SplitInt.high(energyStorage.getEnergyStored());
                 case 5 -> com.productivecows.menu.SplitInt.high(energyStorage.getMaxEnergyStored());
+                case 6 -> currentRate;
+                case 7 -> BuiltInRegistries.FLUID.getId(fluidTank.getFluid().getFluid());
                 default -> 0;
             };
         }
@@ -126,7 +129,7 @@ case 2 -> {
 
         @Override
         public int getCount() {
-            return 6;
+            return 8;
         }
     };
 
@@ -164,46 +167,42 @@ case 2 -> {
     public void tick(Level lvl, BlockPos pos, BlockState state) {
         tickBucketEmptying();
 
-        // 1. Generate power if we have milk fluid and energy storage has room
+        // 1. Burn fuel: milk or a material cow's fluid; higher tiers give more RF per mB and more RF/t
+        currentRate = 0;
+        int tier = GeneratorFuel.tier(fluidTank.getFluid().getFluid(), com.productivecows.ProductiveCows.getDefinitions(lvl));
         int space = energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored();
-        if (space > 0 && fluidTank.getFluidAmount() > 0) {
-            // Maximum RF generated this tick is 40 RF
-            int toGenerate = Math.min(40, space);
-            
-            // Milk cost: 1 mB of milk = 100 RF. So cost = toGenerate / 100.0 mB
-            double milkCost = toGenerate / 100.0;
-            
-            // We must ensure we actually have enough milk.
-            // Available milk in mB = fluidTank.getFluidAmount() - fractionalMilk
-            double availableMilk = fluidTank.getFluidAmount() - fractionalMilk;
-            if (availableMilk <= 0.0) {
-                // Not even a tiny bit of milk available, let's align fractionalMilk to 0
+        if (tier >= 0 && space > 0 && fluidTank.getFluidAmount() > 0) {
+            int rfPerMb = GeneratorFuel.rfPerMb(tier);
+            int toGenerate = Math.min(GeneratorFuel.rfPerTick(tier), space);
+            double fuelCost = (double) toGenerate / rfPerMb;
+
+            // fractionalMilk is the part of a mB already burned but not yet drained from the tank
+            double availableFuel = fluidTank.getFluidAmount() - fractionalMilk;
+            if (availableFuel <= 0.0) {
                 fractionalMilk = 0.0;
             } else {
-                if (milkCost > availableMilk) {
-                    milkCost = availableMilk;
-                    toGenerate = (int) (milkCost * 100.0);
+                if (fuelCost > availableFuel) {
+                    fuelCost = availableFuel;
+                    toGenerate = (int) (fuelCost * rfPerMb);
                 }
-
                 if (toGenerate > 0) {
                     energyStorage.addEnergy(toGenerate);
-                    fractionalMilk += milkCost;
-
-                    // Drain whole mB from the fluid tank
+                    currentRate = toGenerate;
+                    fractionalMilk += fuelCost;
                     if (fractionalMilk >= 1.0) {
-                        int wholeMilkToDrain = (int) Math.floor(fractionalMilk);
-                        fluidTank.drain(wholeMilkToDrain, IFluidHandler.FluidAction.EXECUTE);
-                        fractionalMilk -= wholeMilkToDrain;
+                        int wholeMbToDrain = (int) Math.floor(fractionalMilk);
+                        fluidTank.drain(wholeMbToDrain, IFluidHandler.FluidAction.EXECUTE);
+                        fractionalMilk -= wholeMbToDrain;
                     }
                     setChanged();
                 }
             }
         }
 
-        // 2. Auto-push generated energy to neighboring blocks (max 200 RF/t output)
+        // 2. Auto-push generated energy to neighboring blocks (max 400 RF/t, above the best fuel's output)
         int energyStored = energyStorage.getEnergyStored();
         if (energyStored > 0 && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-            int maxSend = Math.min(200, energyStored);
+            int maxSend = Math.min(400, energyStored);
             int sent = 0;
 
             for (Direction dir : Direction.values()) {
@@ -225,28 +224,24 @@ case 2 -> {
 
     private void tickBucketEmptying() {
         ItemStack inputBucket = itemHandler.getStackInSlot(0);
-        if (!inputBucket.isEmpty()) {
-            boolean isVanillaMilk = inputBucket.is(Items.MILK_BUCKET);
-            boolean isCustomMilk = inputBucket.is(com.productivecows.fluid.ModFluids.LIQUID_MILK.bucket().get());
-            
-            if (isVanillaMilk || isCustomMilk) {
-                Fluid milkFluid = com.productivecows.fluid.ModFluids.LIQUID_MILK.source().get();
-                FluidStack milkStack = new FluidStack(milkFluid, 1000);
-                int filled = fluidTank.fill(milkStack, IFluidHandler.FluidAction.SIMULATE);
-                if (filled >= 1000) {
-                    ItemStack outputSlot = itemHandler.getStackInSlot(1);
-                    if (outputSlot.isEmpty() || (outputSlot.is(Items.BUCKET) && outputSlot.getCount() < outputSlot.getMaxStackSize())) {
-                        fluidTank.fill(milkStack, IFluidHandler.FluidAction.EXECUTE);
-                        inputBucket.shrink(1);
-                        if (outputSlot.isEmpty()) {
-                            itemHandler.setStackInSlot(1, new ItemStack(Items.BUCKET));
-                        } else {
-                            outputSlot.grow(1);
-                        }
-                        setChanged();
-                    }
-                }
+        Fluid bucketFluid = GeneratorFuel.bucketFluid(inputBucket);
+        if (bucketFluid == null || !isFuel(bucketFluid)) {
+            return;
+        }
+        FluidStack fuel = new FluidStack(bucketFluid, 1000);
+        if (fluidTank.fill(fuel, IFluidHandler.FluidAction.SIMULATE) < 1000) {
+            return;
+        }
+        ItemStack outputSlot = itemHandler.getStackInSlot(1);
+        if (outputSlot.isEmpty() || (outputSlot.is(Items.BUCKET) && outputSlot.getCount() < outputSlot.getMaxStackSize())) {
+            fluidTank.fill(fuel, IFluidHandler.FluidAction.EXECUTE);
+            inputBucket.shrink(1);
+            if (outputSlot.isEmpty()) {
+                itemHandler.setStackInSlot(1, new ItemStack(Items.BUCKET));
+            } else {
+                outputSlot.grow(1);
             }
+            setChanged();
         }
     }
 

@@ -21,24 +21,19 @@ public class MilkGeneratorMenu extends AbstractContainerMenu {
 
     // Client Constructor
     public MilkGeneratorMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(6));
+        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(8));
     }
 
     // Common/Server Constructor
     public MilkGeneratorMenu(int windowId, Inventory inv, BlockEntity be, ContainerData data) {
         super(ProductiveCows.MILK_GENERATOR_MENU.get(), windowId);
-        checkContainerDataCount(data, 6);
+        checkContainerDataCount(data, 8);
         this.blockEntity = be;
         this.data = data;
 
         if (be instanceof MilkGeneratorBlockEntity generator) {
-            // Slot 0: Bucket emptying input. X=94, Y=16
-            this.addSlot(new SlotItemHandler(generator.getInventory(), 0, 94, 16) {
-                @Override
-                public boolean mayPlace(ItemStack stack) {
-                    return stack.is(Items.MILK_BUCKET) || stack.is(com.productivecows.fluid.ModFluids.LIQUID_MILK.bucket().get());
-                }
-            });
+            // Slot 0: fuel bucket input, validated by the block entity's handler. X=94, Y=16
+            this.addSlot(new SlotItemHandler(generator.getInventory(), 0, 94, 16));
             // Slot 1: Output empty bucket. X=94, Y=52
             this.addSlot(new SlotItemHandler(generator.getInventory(), 1, 94, 52) {
                 @Override
@@ -73,6 +68,16 @@ public class MilkGeneratorMenu extends AbstractContainerMenu {
 
     public int getMaxEnergyStored() {
         return SplitInt.join(data.get(1), data.get(5));
+    }
+
+    /** RF the generator produced in the last tick. */
+    public int getProductionRate() {
+        return data.get(6);
+    }
+
+    /** The fluid in the tank, sent as its registry id. */
+    public net.minecraft.world.level.material.Fluid getFluid() {
+        return net.minecraft.core.registries.BuiltInRegistries.FLUID.byId(data.get(7));
     }
 
     public int getFluidAmount() {
