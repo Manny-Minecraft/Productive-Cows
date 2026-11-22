@@ -17,7 +17,7 @@ public class Config {
     // Basic Cooler Settings
     private static final ModConfigSpec.IntValue BASIC_COOLER_COOK_TIME = BUILDER
             .comment("Base time in ticks to process a fluid in the Basic Cooler.")
-            .defineInRange("basicCoolerCookTime", 100, 1, Integer.MAX_VALUE);
+            .defineInRange("basicCoolerCookTime", 140, 1, Integer.MAX_VALUE);
 
     // Advanced Cooler Settings
     private static final ModConfigSpec.IntValue ADVANCED_COOLER_CAPACITY = BUILDER
