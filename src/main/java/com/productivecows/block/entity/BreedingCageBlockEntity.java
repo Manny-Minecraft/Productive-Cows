@@ -38,7 +38,8 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             if (slot == 0 || slot == 1) {
-                return stack.is(ProductiveCows.CAPTURED_COW.get());
+                // Only adults breed, as in vanilla
+                return stack.is(ProductiveCows.CAPTURED_COW.get()) && !com.productivecows.item.CapturedCowItem.isCalf(stack);
             } else if (slot == 2) {
                 return stack.is(Items.WHEAT);
             }
