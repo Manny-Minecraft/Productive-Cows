@@ -14,11 +14,13 @@ public class RegisterCowsEventKJS implements KubeEvent {
         this.registry = registry;
     }
 
+    /** Cow ids without a namespace belong to kubejs, like other KubeJS content: 'vibranium' is kubejs:vibranium. */
+    public static ResourceLocation parseCowId(String id) {
+        return id.contains(":") ? ResourceLocation.parse(id) : ResourceLocation.fromNamespaceAndPath("kubejs", id);
+    }
+
     public CowBuilder create(String id) {
-        ResourceLocation location = ResourceLocation.parse(id);
-        if (!location.getNamespace().equals("minecraft") && !id.contains(":")) {
-            location = ResourceLocation.fromNamespaceAndPath("kubejs", id);
-        }
+        ResourceLocation location = parseCowId(id);
         CowBuilder builder = new CowBuilder(location, this);
         builders.add(builder);
         return builder;

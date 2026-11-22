@@ -34,6 +34,7 @@ public class CowStickItem extends Item {
                     entityData.putString("id", "productivecows:material_cow");
                     entityData.putString("CowDefinitionId", defId.toString());
                     entityData.putInt("MilkingCooldown", cow.getMilkingCooldown());
+                    CapturedCowItem.saveAge(entityData, cow);
                     
                     if (cow.hasCustomName()) {
                         String nameStr = cow.getCustomName().getString();
@@ -63,11 +64,13 @@ public class CowStickItem extends Item {
                 }
             }
             return InteractionResult.sidedSuccess(player.level().isClientSide);
-        } else if (target instanceof net.minecraft.world.entity.animal.Cow cow) {
+        } else if (target.getType() == net.minecraft.world.entity.EntityType.COW && target instanceof net.minecraft.world.entity.animal.Cow cow) {
+            // Plain cows only: a mooshroom or another mod's cow would be released back as a plain cow
             if (!player.level().isClientSide) {
                 ItemStack cowStack = new ItemStack(ProductiveCows.CAPTURED_COW.get());
                 CompoundTag entityData = new CompoundTag();
                 entityData.putString("id", "minecraft:cow");
+                CapturedCowItem.saveAge(entityData, cow);
                 
                 if (cow.hasCustomName()) {
                     String nameStr = cow.getCustomName().getString();

@@ -43,7 +43,8 @@ public class CommonGameEvents {
         net.minecraft.world.item.ItemStack itemstack = player.getItemInHand(hand);
         net.minecraft.world.entity.Entity target = event.getTarget();
 
-        if (target instanceof net.minecraft.world.entity.animal.Cow vanillaCow && !(vanillaCow instanceof com.productivecows.entity.MaterialCowEntity)) {
+        // Plain cows only: not mooshrooms, material cows or other mods' Cow subclasses
+        if (target.getType() == net.minecraft.world.entity.EntityType.COW && target instanceof net.minecraft.world.entity.animal.Cow vanillaCow) {
             String targetDef = null;
             boolean isBucket = false;
 

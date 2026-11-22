@@ -33,10 +33,18 @@ import org.jetbrains.annotations.Nullable;
 
 public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
 
+    // Only what the client renders is synced, throttled; GUI values travel through ContainerData
+    private final ClientSyncThrottle clientSync = new ClientSyncThrottle();
+
+    private final NeighborCapabilities<IFluidHandler> neighborFluids = new NeighborCapabilities<>(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK);
+
     private final ItemStackHandler itemHandler = new ItemStackHandler(3) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             if (slot == 0) {
+                if (com.productivecows.item.CapturedCowItem.isCalf(stack)) {
+                    return false; // Calves cannot be milked
+                }
                 return stack.is(ProductiveCows.CAPTURED_COW.get()) || stack.is(ProductiveCows.MATERIAL_COW_SPAWN_EGG.get()) || stack.is(Items.COW_SPAWN_EGG);
             }
             if (slot == 1) {
@@ -52,11 +60,6 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
         public int getSlotLimit(int slot) {
             if (slot == 0) {
                 return 1;
@@ -67,9 +70,7 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            if (slot == 0) clientSync.mark(); // the renderer shows the caged cow
         }
     };
 
@@ -77,13 +78,14 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            clientSync.mark();
         }
     };
 
-    private int milkingTimer = 400;
+    /** Ticks between two milkings. */
+    public static final int MILKING_CYCLE_TICKS = 400;
+
+    private int milkingTimer = MILKING_CYCLE_TICKS;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
@@ -116,8 +118,11 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         return fluidTank;
     }
 
+    // Hoppers and pipes may only take the filled buckets; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 2);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {
@@ -164,6 +169,17 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         return false;
     }
 
+    /** Base production per milking cycle (400 ticks), scaled by the definition's base_yield percentage. */
+    private static final int BASE_YIELD_MB = 1000;
+    /** base_yield is a percentage; 800 fills the whole 8000 mB tank in one cycle. */
+    private static final int MAX_BASE_YIELD = 800;
+
+    /** mB produced per cycle: base_yield 100 = 1000 mB, 50 = 500 mB, 200 = 2000 mB. */
+    public static int getYieldPerCycle(CowDefinition def) {
+        int percent = net.minecraft.util.Mth.clamp(def.baseYield(), 1, MAX_BASE_YIELD);
+        return BASE_YIELD_MB * percent / 100;
+    }
+
     public void tick(Level lvl, BlockPos pos, BlockState state) {
         tickBucketFilling();
 
@@ -171,18 +187,18 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         if (def != null) {
             Fluid fluid = BuiltInRegistries.FLUID.get(def.fluidId());
             if (fluid != null && fluid != net.minecraft.world.level.material.Fluids.EMPTY) {
-                FluidStack fluidStack = new FluidStack(fluid, 1000);
-                // FluidTank fill returns the amount filled, checking if we can accept 1000 mB of this fluid
+                int amount = getYieldPerCycle(def);
+                FluidStack fluidStack = new FluidStack(fluid, amount);
+                // FluidTank fill returns the amount filled, checking if we can accept the whole cycle
                 int filled = fluidTank.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
-                if (filled >= 1000) {
+                if (filled >= amount) {
                     if (milkingTimer > 0) {
                         milkingTimer--;
                         setChanged();
                     } else {
                         fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                        milkingTimer = 400;
+                        milkingTimer = MILKING_CYCLE_TICKS;
                         setChanged();
-                        lvl.sendBlockUpdated(pos, state, state, 3);
                     }
                 }
             }
@@ -196,30 +212,27 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                     setChanged();
                 } else {
                     fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                    milkingTimer = 400;
+                    milkingTimer = MILKING_CYCLE_TICKS;
                     setChanged();
-                    lvl.sendBlockUpdated(pos, state, state, 3);
                 }
             }
         } else {
-            if (milkingTimer != 400) {
-                milkingTimer = 400;
+            if (milkingTimer != MILKING_CYCLE_TICKS) {
+                milkingTimer = MILKING_CYCLE_TICKS;
                 setChanged();
             }
         }
 
         tickAutoOutputFluid(lvl, pos);
+        clientSync.flush(lvl, pos, state);
     }
 
     private void tickAutoOutputFluid(Level lvl, BlockPos pos) {
-        if (fluidTank.getFluidAmount() > 0) {
+        if (fluidTank.getFluidAmount() > 0 && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
-                BlockPos targetPos = pos.relative(dir);
-                if (lvl.getBlockEntity(targetPos) instanceof CowCageBlockEntity) {
-                    continue; // Do not push fluid into adjacent cow cages to prevent cross-contamination and loops
-                }
-                IFluidHandler neighborFluidHandler = lvl.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, targetPos, dir.getOpposite());
-                if (neighborFluidHandler != null) {
+                IFluidHandler neighborFluidHandler = neighborFluids.get(serverLevel, pos, dir);
+                // Do not push fluid into adjacent cow cages to prevent cross-contamination and loops
+                if (neighborFluidHandler != null && !(lvl.getBlockEntity(pos.relative(dir)) instanceof CowCageBlockEntity)) {
                     FluidStack toDrain = new FluidStack(fluidTank.getFluid().getFluid(), Math.min(1000, fluidTank.getFluidAmount()));
                     int filled = neighborFluidHandler.fill(toDrain, IFluidHandler.FluidAction.EXECUTE);
                     if (filled > 0) {

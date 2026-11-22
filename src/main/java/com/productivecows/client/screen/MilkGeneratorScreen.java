@@ -56,7 +56,8 @@ public class MilkGeneratorScreen extends AbstractContainerScreen<MilkGeneratorMe
         if (amount > 0 && capacity > 0) {
             int fillHeight = Math.min(52, (amount * 52) / capacity);
             int fluidTopY = fluidGaugeY + 52 - fillHeight;
-            guiGraphics.fill(fluidGaugeX, fluidTopY, fluidGaugeX + 42, fluidGaugeY + 52, 0xFFFFFFFF); // White for milk
+            net.neoforged.neoforge.fluids.FluidStack fuel = new net.neoforged.neoforge.fluids.FluidStack(menu.getFluid(), amount);
+            FluidGuiRenderer.render(guiGraphics, fuel, fluidGaugeX, fluidTopY, 42, fluidGaugeY + 52 - fluidTopY);
         }
 
         // --- GAUGE 2: RF ENERGY STORAGE (Right: X=120, Y=16, Width=14, Height=52) ---
@@ -85,7 +86,7 @@ public class MilkGeneratorScreen extends AbstractContainerScreen<MilkGeneratorMe
             int milkAmount = menu.getFluidAmount();
             int milkMax = menu.getFluidCapacity();
             if (milkAmount > 0) {
-                text.add(Component.translatable("fluid.productivecows.milk_name").withStyle(net.minecraft.ChatFormatting.WHITE));
+                text.add(new net.neoforged.neoforge.fluids.FluidStack(menu.getFluid(), 1).getHoverName().copy().withStyle(net.minecraft.ChatFormatting.WHITE));
                 text.add(Component.literal(milkAmount + " / " + milkMax + " mB").withStyle(net.minecraft.ChatFormatting.GRAY));
             } else {
                 text.add(Component.translatable("gui.productivecows.empty_milk_tank").withStyle(net.minecraft.ChatFormatting.GRAY));
@@ -101,13 +102,13 @@ public class MilkGeneratorScreen extends AbstractContainerScreen<MilkGeneratorMe
             List<Component> text = new ArrayList<>();
             int energyAmount = menu.getEnergyStored();
             int energyMax = menu.getMaxEnergyStored();
-            text.add(Component.literal("Energy (RF)").withStyle(net.minecraft.ChatFormatting.RED));
+            text.add(Component.translatable("gui.productivecows.energy").withStyle(net.minecraft.ChatFormatting.RED));
             text.add(Component.literal(energyAmount + " / " + energyMax + " RF").withStyle(net.minecraft.ChatFormatting.GRAY));
             
             // Show generation rate if active
-            int milkAmount = menu.getFluidAmount();
-            if (milkAmount > 0 && energyAmount < energyMax) {
-                text.add(Component.literal("Producing: +40 RF/t").withStyle(net.minecraft.ChatFormatting.GREEN));
+            int rate = menu.getProductionRate();
+            if (rate > 0) {
+                text.add(Component.translatable("gui.productivecows.producing", rate).withStyle(net.minecraft.ChatFormatting.GREEN));
             }
             guiGraphics.renderComponentTooltip(this.font, text, mouseX, mouseY);
         }

@@ -29,35 +29,14 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider {
 
-    public static class CustomEnergyStorage extends EnergyStorage {
-        public CustomEnergyStorage(int capacity, int maxReceive, int maxExtract) {
-            super(capacity, maxReceive, maxExtract);
-        }
-        public void setEnergy(int energy) {
-            this.energy = energy;
-        }
-        public void consumeEnergy(int energy) {
-            this.energy = Math.max(0, this.energy - energy);
-        }
-        public void onEnergyChanged() {}
-        @Override
-        public int receiveEnergy(int maxReceive, boolean simulate) {
-            int received = super.receiveEnergy(maxReceive, simulate);
-            if (received > 0 && !simulate) onEnergyChanged();
-            return received;
-        }
-        @Override
-        public int extractEnergy(int maxExtract, boolean simulate) {
-            int extracted = super.extractEnergy(maxExtract, simulate);
-            if (extracted > 0 && !simulate) onEnergyChanged();
-            return extracted;
-        }
-    }
+    // Only what the client renders is synced, throttled; GUI values travel through ContainerData
+    private final ClientSyncThrottle clientSync = new ClientSyncThrottle();
+
+    private final NeighborCapabilities<IItemHandler> neighborItems = new NeighborCapabilities<>(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK);
 
     private final ItemStackHandler itemHandler = new ItemStackHandler(5) {
         @Override
@@ -75,27 +54,8 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         }
 
         @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot != 1 && slot != 4) return ItemStack.EMPTY;
-            return super.extractItem(slot, amount, simulate);
-        }
-
-        @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
-        }
-    };
-
-    private final CustomEnergyStorage energyStorage = new CustomEnergyStorage(Math.max(1000, com.productivecows.Config.basicCoolerCapacity), 500, 500) {
-        @Override
-        public void onEnergyChanged() {
-            setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
 
@@ -103,9 +63,7 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            clientSync.mark();
         }
     };
 
@@ -116,27 +74,26 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0 -> energyStorage.getEnergyStored();
-                case 1 -> energyStorage.getMaxEnergyStored();
-                case 2 -> cookTime;
-                case 3 -> Math.max(1, com.productivecows.Config.basicCoolerCookTime);
+                case 0 -> cookTime;
+                case 1 -> Math.max(1, com.productivecows.Config.basicCoolerCookTime);
                 default -> 0;
             };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 2) {
+            if (index == 0) {
                 cookTime = value;
             }
         }
 
         @Override
         public int getCount() {
-            return 4;
+            return 2;
         }
     };
 
+    // The Basic Cooler needs no power; only the Advanced Cooler uses energy
     public LiquidCoolerBlockEntity(BlockPos pos, BlockState state) {
         super(ProductiveCows.LIQUID_COOLER_BE.get(), pos, state);
     }
@@ -149,8 +106,11 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         return fluidTank;
     }
 
+    // Hoppers and pipes may only take empty buckets and results; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 1, 4);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {
@@ -163,10 +123,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
     
     public int getCookTimeTotal() {
         return Math.max(1, com.productivecows.Config.basicCoolerCookTime);
-    }
-
-    public CustomEnergyStorage getEnergyStorage() {
-        return energyStorage;
     }
 
     @Nullable
@@ -207,7 +163,7 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         if (!tankFluid.isEmpty()) {
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(tankFluid.getFluid());
             CowDefinition matchingDef = null;
-            for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                 if (def.fluidId().equals(fluidKey)) {
                     matchingDef = def;
                     break;
@@ -231,7 +187,6 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
 
                 if (resultItem != Items.AIR) {
                     int cookTimeTotal = Math.max(1, com.productivecows.Config.basicCoolerCookTime);
-                    int energyCostPerTick = Math.max(0, com.productivecows.Config.basicCoolerEnergyCost);
 
                     if (fluidTank.getFluidAmount() >= 1000) {
                         ItemStack outputSlot = itemHandler.getStackInSlot(4);
@@ -246,12 +201,10 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
                                 }
                                 cookTime = 0;
                                 setChanged();
-                                lvl.sendBlockUpdated(pos, state, state, 3);
                             }
                             setChanged();
                         }
                     }
-                    return;
                 }
             } else {
                 if (cookTime != 0) {
@@ -262,13 +215,13 @@ public class LiquidCoolerBlockEntity extends BlockEntity implements MenuProvider
         }
 
         tickAutoOutput(lvl, pos);
+        clientSync.flush(lvl, pos, state);
     }
 
     private void tickAutoOutput(Level lvl, BlockPos pos) {
         ItemStack outputStack = itemHandler.getStackInSlot(4);
-        if (!outputStack.isEmpty()) {
-            BlockPos targetPos = pos.above();
-            net.neoforged.neoforge.items.IItemHandler neighborItemHandler = lvl.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, targetPos, net.minecraft.core.Direction.DOWN);
+        if (!outputStack.isEmpty() && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            IItemHandler neighborItemHandler = neighborItems.get(serverLevel, pos, net.minecraft.core.Direction.UP);
             if (neighborItemHandler != null) {
                 ItemStack remainder = net.neoforged.neoforge.items.ItemHandlerHelper.insertItem(neighborItemHandler, outputStack.copy(), false);
                 if (remainder.getCount() != outputStack.getCount()) {

@@ -2,6 +2,7 @@ package com.productivecows.block.entity;
 
 import com.productivecows.ProductiveCows;
 import com.productivecows.data.CowDefinition;
+import com.productivecows.item.CapturedCowItem;
 import com.productivecows.menu.BreedingCageMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,6 +11,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +26,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.Map;
-import java.util.Random;
 
 public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -37,7 +38,8 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             if (slot == 0 || slot == 1) {
-                return stack.is(ProductiveCows.CAPTURED_COW.get());
+                // Only adults breed, as in vanilla
+                return stack.is(ProductiveCows.CAPTURED_COW.get()) && !com.productivecows.item.CapturedCowItem.isCalf(stack);
             } else if (slot == 2) {
                 return stack.is(Items.WHEAT);
             }
@@ -51,8 +53,11 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         }
     };
 
+    // Hoppers and pipes may only take the offspring; the menu uses itemHandler directly
+    private final net.neoforged.neoforge.items.IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 3);
+
     public net.neoforged.neoforge.items.IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     private int progress = 0;
@@ -82,8 +87,6 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         }
     };
 
-    private final Random random = new Random();
-
     public BreedingCageBlockEntity(BlockPos pos, BlockState blockState) {
         super(ProductiveCows.BREEDING_CAGE_BE.get(), pos, blockState);
     }
@@ -91,12 +94,16 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
     public void serverTick(Level level, BlockPos pos, BlockState state, BreedingCageBlockEntity blockEntity) {
         if (level.isClientSide) return;
 
-        boolean hasRecipe = hasRecipe();
+        long gameTime = level.getGameTime();
+        clearExpiredCooldown(0, gameTime);
+        clearExpiredCooldown(1, gameTime);
+
+        boolean hasRecipe = hasRecipe(gameTime);
         if (hasRecipe) {
             this.progress++;
             setChanged(level, pos, state);
             if (this.progress >= this.maxProgress) {
-                craftItem();
+                craftItem(level);
             }
         } else {
             if (this.progress > 0) {
@@ -106,11 +113,16 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         }
     }
 
-    private boolean hasRecipe() {
+    /**
+     * Whether the cage can breed now. Does not roll the result: every possible outcome
+     * (either parent or the mutation) must fit in the output slot, so the single roll
+     * done in craftItem can always be stored.
+     */
+    private boolean hasRecipe(long gameTime) {
         ItemStack parent1Stack = itemHandler.getStackInSlot(0);
         ItemStack parent2Stack = itemHandler.getStackInSlot(1);
         ItemStack wheatStack = itemHandler.getStackInSlot(2);
-        
+
         if (parent1Stack.isEmpty() || parent2Stack.isEmpty() || wheatStack.isEmpty()) {
             return false;
         }
@@ -122,25 +134,29 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
             return false;
         }
 
-        if (hasBreedingCooldown(parent1Stack) || hasBreedingCooldown(parent2Stack)) {
+        if (CapturedCowItem.getBreedingCooldownRemaining(parent1Stack, gameTime) > 0
+                || CapturedCowItem.getBreedingCooldownRemaining(parent2Stack, gameTime) > 0) {
             return false;
         }
 
-        ItemStack result = getBreedingResult(def1, def2);
-        if (result.isEmpty()) {
-            return false;
+        if (def1.equals(def2)) {
+            return canInsertIntoOutput(createCowItem(def1));
         }
 
-        return canInsertIntoOutput(result);
+        // Different parents: the result can be either parent or the mutation, so the output must be empty
+        return findMutation(def1, def2) != null && itemHandler.getStackInSlot(3).isEmpty();
     }
 
-    private void craftItem() {
+    private void craftItem(Level level) {
         ItemStack parent1Stack = itemHandler.getStackInSlot(0);
         ItemStack parent2Stack = itemHandler.getStackInSlot(1);
         ResourceLocation def1 = getCowDef(parent1Stack);
         ResourceLocation def2 = getCowDef(parent2Stack);
 
-        ItemStack result = getBreedingResult(def1, def2);
+        ItemStack result = getBreedingResult(def1, def2, level.getRandom());
+        if (result.isEmpty() || !canInsertIntoOutput(result)) {
+            return; // Nothing consumed; hasRecipe guarantees this does not happen
+        }
 
         itemHandler.extractItem(2, 1, false); // Consume 1 wheat
 
@@ -148,12 +164,12 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         if (outputSlot.isEmpty()) {
             itemHandler.setStackInSlot(3, result);
         } else {
-            outputSlot.grow(result.getCount());
+            itemHandler.setStackInSlot(3, outputSlot.copyWithCount(outputSlot.getCount() + result.getCount()));
         }
 
-        // Apply breeding cooldown (6000 ticks = 5 minutes)
-        applyBreedingCooldown(parent1Stack);
-        applyBreedingCooldown(parent2Stack);
+        long cooldownUntil = level.getGameTime() + com.productivecows.Config.breedingCooldownTicks;
+        applyBreedingCooldown(0, cooldownUntil);
+        applyBreedingCooldown(1, cooldownUntil);
 
         this.progress = 0;
     }
@@ -163,49 +179,77 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         if (customData != null) {
             CompoundTag tag = customData.copyTag();
             if (tag.contains("CowDefinitionId")) {
-                return ResourceLocation.tryParse(tag.getString("CowDefinitionId"));
+                return com.productivecows.data.MaterialCowDataLoader.resolveId(ResourceLocation.tryParse(tag.getString("CowDefinitionId")));
             }
         }
         return null;
     }
 
-    private boolean hasBreedingCooldown(ItemStack stack) {
+    /**
+     * Removes cooldown data that no longer applies: an expired BreedingCooldownUntil, and the
+     * legacy BreedingCooldown counter (it never counted down, so old items treat it as expired).
+     * Keeps captured cows stackable with fresh ones.
+     */
+    private void clearExpiredCooldown(int slot, long gameTime) {
+        ItemStack stack = itemHandler.getStackInSlot(slot);
         CustomData customData = stack.get(DataComponents.ENTITY_DATA);
-        if (customData != null) {
-            CompoundTag tag = customData.copyTag();
-            return tag.getInt("BreedingCooldown") > 0;
+        if (customData == null) {
+            return;
         }
-        return false;
+        boolean hasLegacy = customData.contains(CapturedCowItem.LEGACY_BREEDING_COOLDOWN);
+        boolean expired = customData.contains(CapturedCowItem.BREEDING_COOLDOWN_UNTIL)
+                && CapturedCowItem.getBreedingCooldownRemaining(stack, gameTime) == 0;
+        if (!hasLegacy && !expired) {
+            return;
+        }
+        ItemStack updated = stack.copy();
+        updated.set(DataComponents.ENTITY_DATA, customData.update(tag -> {
+            tag.remove(CapturedCowItem.LEGACY_BREEDING_COOLDOWN);
+            if (expired) {
+                tag.remove(CapturedCowItem.BREEDING_COOLDOWN_UNTIL);
+            }
+        }));
+        itemHandler.setStackInSlot(slot, updated);
     }
 
-    private void applyBreedingCooldown(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.ENTITY_DATA);
-        CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-        tag.putInt("BreedingCooldown", com.productivecows.Config.breedingCooldownTicks);
-        stack.set(DataComponents.ENTITY_DATA, CustomData.of(tag));
+    private void applyBreedingCooldown(int slot, long cooldownUntil) {
+        ItemStack updated = itemHandler.getStackInSlot(slot).copy();
+        CustomData customData = updated.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+        updated.set(DataComponents.ENTITY_DATA, customData.update(tag -> {
+            tag.remove(CapturedCowItem.LEGACY_BREEDING_COOLDOWN);
+            tag.putLong(CapturedCowItem.BREEDING_COOLDOWN_UNTIL, cooldownUntil);
+        }));
+        itemHandler.setStackInSlot(slot, updated);
     }
 
-    private ItemStack getBreedingResult(ResourceLocation p1, ResourceLocation p2) {
-        if (p1.equals(p2)) {
-            return createCowItem(p1);
-        }
-
-        Map<ResourceLocation, CowDefinition> defs = ProductiveCows.getActiveDefinitions();
+    private CowDefinition findMutation(ResourceLocation p1, ResourceLocation p2) {
+        Map<ResourceLocation, CowDefinition> defs = ProductiveCows.getDefinitions(level);
         for (CowDefinition def : defs.values()) {
             ResourceLocation defP1 = def.parent1();
             ResourceLocation defP2 = def.parent2();
             if (defP1 != null && defP2 != null) {
                 if ((defP1.equals(p1) && defP2.equals(p2)) || (defP1.equals(p2) && defP2.equals(p1))) {
-                    if (random.nextDouble() < def.breedChance()) {
-                        return createCowItem(def.id());
-                    } else {
-                        // Failed mutation, return one of the parents randomly
-                        return createCowItem(random.nextBoolean() ? p1 : p2);
-                    }
+                    return def;
                 }
             }
         }
-        return ItemStack.EMPTY; // No valid recipe
+        return null;
+    }
+
+    private ItemStack getBreedingResult(ResourceLocation p1, ResourceLocation p2, RandomSource random) {
+        if (p1.equals(p2)) {
+            return createCowItem(p1);
+        }
+
+        CowDefinition mutation = findMutation(p1, p2);
+        if (mutation == null) {
+            return ItemStack.EMPTY; // No valid recipe
+        }
+        if (random.nextDouble() < mutation.breedChance()) {
+            return createCowItem(mutation.id());
+        }
+        // Failed mutation, return one of the parents randomly
+        return createCowItem(random.nextBoolean() ? p1 : p2);
     }
 
     private ItemStack createCowItem(ResourceLocation defId) {

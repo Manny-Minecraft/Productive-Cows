@@ -17,7 +17,23 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 @EventBusSubscriber(modid = ProductiveCows.MODID, value = Dist.CLIENT)
 public class ClientModBusEvents {
-    
+
+    // Registered on the game bus from the mod constructor: forget the previous server's cows when leaving it
+    public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        ClientCowData.clear();
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("deprecation") // ItemBlockRenderTypes is still how NeoForge 21.1 assigns fluid render layers
+    public static void onClientSetup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            for (ModFluids.RegisteredFluid fluid : ModFluids.ALL_FLUIDS) {
+                net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(fluid.source().get(), net.minecraft.client.renderer.RenderType.translucent());
+                net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(fluid.flowing().get(), net.minecraft.client.renderer.RenderType.translucent());
+            }
+        });
+    }
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ProductiveCows.MATERIAL_COW.get(), MaterialCowRenderer::new);

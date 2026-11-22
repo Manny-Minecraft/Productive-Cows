@@ -24,6 +24,11 @@ public class ClientCowData {
     }
 
     public static CowDefinition getDefinition(ResourceLocation id) {
-        return DEFINITIONS.get(id);
+        return id == null ? null : DEFINITIONS.get(CowDefinition.resolveLegacyId(id, DEFINITIONS));
+    }
+
+    /** Called when leaving a server, so the next world never sees the previous server's cows. */
+    public static void clear() {
+        DEFINITIONS = Collections.emptyMap();
     }
 }

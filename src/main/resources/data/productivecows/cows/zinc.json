@@ -1,11 +1,14 @@
 {
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "create" }
+  ],
   "name": "Zinc",
   "tier": 2,
   "fluid": "productivecows:molten_zinc",
   "hex_color": "#8FB8A8",
-  "breedChance": 0.2,
-  "baseYield": 100,
+  "breed_chance": 0.2,
+  "base_yield": 100,
   "parent1": "productivecows:iron",
-  "parent2": "productivecows:copper",
+  "parent2": "productivecows:clay",
   "cooling_result_tag": "c:ingots/zinc"
 }

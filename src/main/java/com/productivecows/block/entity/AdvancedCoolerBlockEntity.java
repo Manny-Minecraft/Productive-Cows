@@ -73,6 +73,12 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
+    // Only what the client renders is synced, throttled; GUI values travel through ContainerData
+    private final ClientSyncThrottle clientSync = new ClientSyncThrottle();
+
+    private final NeighborCapabilities<IFluidHandler> neighborFluids = new NeighborCapabilities<>(Capabilities.FluidHandler.BLOCK);
+    private final NeighborCapabilities<IItemHandler> neighborItems = new NeighborCapabilities<>(Capabilities.ItemHandler.BLOCK);
+
     private final ItemStackHandler itemHandler = new ItemStackHandler(6) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -108,9 +114,6 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
 
@@ -119,7 +122,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         public boolean isFluidValid(FluidStack stack) {
             Fluid f = stack.getFluid();
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(f);
-            for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                 if (def.fluidId().equals(fluidKey)) {
                     return true;
                 }
@@ -130,9 +133,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         protected void onContentsChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            clientSync.mark();
         }
     };
 
@@ -140,9 +141,6 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public void onEnergyChanged() {
             setChanged();
-            if (level != null && !level.isClientSide) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
         }
     };
     private int cookTime = 0;
@@ -152,8 +150,9 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0 -> energyStorage.getEnergyStored();
-                case 1 -> energyStorage.getMaxEnergyStored();
+                // Energy can exceed a short: low halves here, high halves at the end (see SplitInt)
+                case 0 -> com.productivecows.menu.SplitInt.low(energyStorage.getEnergyStored());
+                case 1 -> com.productivecows.menu.SplitInt.low(energyStorage.getMaxEnergyStored());
                 case 2 -> fluidTank.getFluidAmount();
                 case 3 -> fluidTank.getCapacity();
                 case 4 -> cookTime;
@@ -161,6 +160,9 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                     int speedUpgrades = Math.max(0, Math.min(3, itemHandler.getStackInSlot(2).getCount()));
                     yield getCookTimeTotalForSpeed(speedUpgrades);
                 }
+                case 6 -> getEnergyCostPerTick();
+                case 7 -> com.productivecows.menu.SplitInt.high(energyStorage.getEnergyStored());
+                case 8 -> com.productivecows.menu.SplitInt.high(energyStorage.getMaxEnergyStored());
                 default -> 0;
             };
         }
@@ -168,8 +170,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public void set(int index, int value) {
             switch (index) {
-                case 0 -> energyStorage.setEnergy(value);
-                case 2 -> {
+case 2 -> {
                     if (fluidTank.getFluid().isEmpty()) {
                         fluidTank.setFluid(FluidStack.EMPTY);
                     } else {
@@ -182,7 +183,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
 
         @Override
         public int getCount() {
-            return 6;
+            return 9;
         }
     };
 
@@ -202,8 +203,11 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         return energyStorage;
     }
 
+    // Hoppers and pipes may only take empty buckets and results, never upgrades; the menu uses itemHandler directly
+    private final IItemHandler automationItemHandler = new AutomationItemHandler(itemHandler, 1, 4);
+
     public IItemHandler getItemHandlerCapability() {
-        return itemHandler;
+        return automationItemHandler;
     }
 
     public IFluidHandler getFluidHandlerCapability() {
@@ -254,7 +258,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         if (!tankFluid.isEmpty()) {
             ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(tankFluid.getFluid());
             CowDefinition matchingDef = null;
-            for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                 if (def.fluidId().equals(fluidKey)) {
                     matchingDef = def;
                     break;
@@ -284,11 +288,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                     int cookTimeTotal = getCookTimeTotalForSpeed(speedUpgrades);
                     int fluidCost = getFluidCostForEfficiency(efficiencyUpgrades);
                     
-                    int baseEnergyPerTick = getBaseEnergyPerTick(speedUpgrades);
-                    float efficiencyMultiplier = getEfficiencyEnergyMultiplier(efficiencyUpgrades);
-                    float energyMultiplier = getEnergyUpgradeMultiplier(energyUpgrades);
-                    
-                    int energyCostPerTick = (int) (baseEnergyPerTick * efficiencyMultiplier * energyMultiplier);
+                    int energyCostPerTick = getEnergyCostPerTick(speedUpgrades, efficiencyUpgrades, energyUpgrades);
 
                     if (fluidTank.getFluidAmount() >= fluidCost && energyStorage.getEnergyStored() >= energyCostPerTick) {
                         ItemStack outputSlot = itemHandler.getStackInSlot(4);
@@ -307,7 +307,6 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                                 }
                                 cookTime = 0;
                                 setChanged();
-                                lvl.sendBlockUpdated(pos, state, state, 3);
                             }
                             setChanged();
                         }
@@ -327,6 +326,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         }
 
         tickAutoOutput(lvl, pos);
+        clientSync.flush(lvl, pos, state);
     }
 
     private int getCookTimeTotalForSpeed(int upgrades) {
@@ -343,6 +343,20 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
         if (upgrades == 2) return (int)(baseCost * 0.75f);
         if (upgrades == 3) return (int)(baseCost * 0.50f);
         return baseCost;
+    }
+
+    /** RF/t used while cooling with the installed upgrades; also sent to the GUI so its tooltip matches. */
+    public int getEnergyCostPerTick() {
+        return getEnergyCostPerTick(
+                Math.max(0, Math.min(3, itemHandler.getStackInSlot(2).getCount())),
+                Math.max(0, Math.min(3, itemHandler.getStackInSlot(3).getCount())),
+                Math.max(0, Math.min(3, itemHandler.getStackInSlot(5).getCount())));
+    }
+
+    private int getEnergyCostPerTick(int speedUpgrades, int efficiencyUpgrades, int energyUpgrades) {
+        return (int) (getBaseEnergyPerTick(speedUpgrades)
+                * getEfficiencyEnergyMultiplier(efficiencyUpgrades)
+                * getEnergyUpgradeMultiplier(energyUpgrades));
     }
 
     private int getBaseEnergyPerTick(int speedUpgrades) {
@@ -372,6 +386,9 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     private void tickAutoInput(Level lvl, BlockPos pos) {
+        if (!(lvl instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
+            return;
+        }
         // Query neighbors in all 6 directions to pull fluid from
         for (Direction dir : Direction.values()) {
             // Check if our fluid tank has room to pull fluid (at least 100 mB room)
@@ -380,12 +397,11 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                 break;
             }
 
-            BlockPos targetPos = pos.relative(dir);
-            BlockEntity neighborBE = lvl.getBlockEntity(targetPos);
+            IFluidHandler neighborFluidHandler = neighborFluids.get(serverLevel, pos, dir);
+            BlockEntity neighborBE = neighborFluidHandler == null ? null : lvl.getBlockEntity(pos.relative(dir));
             if (neighborBE instanceof AdvancedCoolerBlockEntity || neighborBE instanceof LiquidCoolerBlockEntity) {
                 continue;
             }
-            IFluidHandler neighborFluidHandler = lvl.getCapability(Capabilities.FluidHandler.BLOCK, targetPos, dir.getOpposite());
             if (neighborFluidHandler != null) {
                 // If our local tank has fluid, we can only pull matching fluid. If empty, we can pull any coolable fluid.
                 FluidStack localFluid = fluidTank.getFluid();
@@ -398,7 +414,7 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
                         // Check if this fluid is coolable
                         ResourceLocation fluidKey = BuiltInRegistries.FLUID.getKey(drainedSimulated.getFluid());
                         boolean isCoolable = false;
-                        for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
+                        for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
                             if (def.fluidId().equals(fluidKey)) {
                                 isCoolable = true;
                                 break;
@@ -428,9 +444,8 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
 
     private void tickAutoOutput(Level lvl, BlockPos pos) {
         ItemStack outputStack = itemHandler.getStackInSlot(4);
-        if (!outputStack.isEmpty()) {
-            BlockPos targetPos = pos.above();
-            IItemHandler neighborItemHandler = lvl.getCapability(Capabilities.ItemHandler.BLOCK, targetPos, Direction.DOWN);
+        if (!outputStack.isEmpty() && lvl instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            IItemHandler neighborItemHandler = neighborItems.get(serverLevel, pos, Direction.UP);
             if (neighborItemHandler != null) {
                 ItemStack remainder = ItemHandlerHelper.insertItem(neighborItemHandler, outputStack.copy(), false);
                 if (remainder.getCount() != outputStack.getCount()) {
@@ -467,10 +482,12 @@ public class AdvancedCoolerBlockEntity extends BlockEntity implements MenuProvid
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        this.itemHandler.deserializeNBT(registries, tag.getCompound("Inventory"));
-        if (this.itemHandler.getSlots() < 6) {
-            this.itemHandler.setSize(6);
+        CompoundTag inventory = tag.getCompound("Inventory");
+        if (inventory.getInt("Size") < 6) {
+            // Saves from before the energy upgrade slot: widen the inventory before reading so no item is dropped
+            inventory.putInt("Size", 6);
         }
+        this.itemHandler.deserializeNBT(registries, inventory);
         this.fluidTank.readFromNBT(registries, tag.getCompound("FluidTank"));
         this.energyStorage.setEnergy(tag.getInt("Energy"));
         this.cookTime = tag.getInt("CookTime");

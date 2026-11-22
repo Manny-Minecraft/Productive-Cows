@@ -34,14 +34,14 @@ public class BreedingCageMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(cage.getInventory(), 0, 43, 17) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.is(ProductiveCows.CAPTURED_COW.get());
+                    return stack.is(ProductiveCows.CAPTURED_COW.get()) && !com.productivecows.item.CapturedCowItem.isCalf(stack);
                 }
             });
             // Slot 1: Parent 2 (X=43, Y=53)
             this.addSlot(new SlotItemHandler(cage.getInventory(), 1, 43, 53) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.is(ProductiveCows.CAPTURED_COW.get());
+                    return stack.is(ProductiveCows.CAPTURED_COW.get()) && !com.productivecows.item.CapturedCowItem.isCalf(stack);
                 }
             });
             // Slot 2: Wheat (X=78, Y=49)

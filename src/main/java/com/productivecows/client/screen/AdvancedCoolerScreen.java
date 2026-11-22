@@ -58,11 +58,10 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
         if (fluidAmount > 0 && fluidMax > 0 && menu.getBlockEntity() instanceof AdvancedCoolerBlockEntity cooler) {
             net.neoforged.neoforge.fluids.capability.templates.FluidTank tank = cooler.getFluidTank();
             if (!tank.getFluid().isEmpty()) {
-                int color = getFluidColor(tank.getFluid().getFluid());
-                int fillHeight = Math.min(52, (fluidAmount * 52) / fluidMax);
+int fillHeight = Math.min(52, (fluidAmount * 52) / fluidMax);
                 int fluidTopY = fluidGaugeY + 52 - fillHeight;
                 // Draw colored fluid column taking the entire space
-                guiGraphics.fill(fluidGaugeX, fluidTopY, fluidGaugeX + 42, fluidGaugeY + 52, 0xFF000000 | color);
+                FluidGuiRenderer.render(guiGraphics, tank.getFluid(), fluidGaugeX, fluidTopY, 42, fluidGaugeY + 52 - fluidTopY);
             }
         }
 
@@ -94,18 +93,6 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
 
 
 
-    private int getFluidColor(net.minecraft.world.level.material.Fluid fluid) {
-        ResourceLocation key = BuiltInRegistries.FLUID.getKey(fluid);
-        for (CowDefinition def : ProductiveCows.getActiveDefinitions().values()) {
-            if (def.fluidId().equals(key)) {
-                return def.hexColor();
-            }
-        }
-        if (fluid == net.minecraft.world.level.material.Fluids.WATER) return 0x3F76E4;
-        if (fluid == net.minecraft.world.level.material.Fluids.LAVA) return 0xFF3C00;
-        return 0x948A7A;
-    }
-
     private void renderGaugesTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
@@ -135,24 +122,18 @@ public class AdvancedCoolerScreen extends AbstractContainerScreen<AdvancedCooler
             List<Component> text = new ArrayList<>();
             int energyAmount = menu.getEnergyStored();
             int energyMax = menu.getMaxEnergyStored();
-            text.add(Component.literal("Energy (RF)").withStyle(net.minecraft.ChatFormatting.RED));
+            text.add(Component.translatable("gui.productivecows.energy").withStyle(net.minecraft.ChatFormatting.RED));
             text.add(Component.literal(energyAmount + " / " + energyMax + " RF").withStyle(net.minecraft.ChatFormatting.GRAY));
             
             // If currently cooling, show the dynamic RF/t consumption rate
             int progress = menu.getCookTime();
             if (progress > 0) {
-                int speedUpgrades = Math.max(0, Math.min(3, menu.getSlot(2).getItem().getCount()));
-                int efficiencyUpgrades = Math.max(0, Math.min(3, menu.getSlot(3).getItem().getCount()));
-                int energyUpgrades = Math.max(0, Math.min(3, menu.getSlot(5).getItem().getCount()));
-                
-                int baseEnergyPerTick = switch(speedUpgrades) { case 1 -> 200; case 2 -> 500; case 3 -> 2000; default -> 100; };
-                float efficiencyMultiplier = switch(efficiencyUpgrades) { case 1 -> 1.2f; case 2 -> 1.5f; case 3 -> 2.0f; default -> 1.0f; };
-                float energyMultiplier = switch(energyUpgrades) { case 1 -> 0.7f; case 2 -> 0.5f; case 3 -> 0.3f; default -> 1.0f; };
-                int currentRfCost = (int)(baseEnergyPerTick * efficiencyMultiplier * energyMultiplier);
+                // Computed by the block entity from the config and the upgrades, so the tooltip matches the real cost
+                int currentRfCost = menu.getEnergyCostPerTick();
 
-                text.add(Component.literal("Consuming: " + currentRfCost + " RF/t").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                text.add(Component.translatable("gui.productivecows.consuming", currentRfCost).withStyle(net.minecraft.ChatFormatting.YELLOW));
             } else {
-                text.add(Component.literal("Consuming: 0 RF/t (Idle)").withStyle(net.minecraft.ChatFormatting.GREEN));
+                text.add(Component.translatable("gui.productivecows.idle").withStyle(net.minecraft.ChatFormatting.GREEN));
             }
             guiGraphics.renderComponentTooltip(this.font, text, mouseX, mouseY);
         }

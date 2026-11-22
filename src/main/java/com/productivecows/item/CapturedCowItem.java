@@ -24,8 +24,37 @@ import java.util.List;
 
 public class CapturedCowItem extends Item {
 
+    /** Game time (ticks) until which the captured cow cannot breed in a Breeding Cage. */
+    public static final String BREEDING_COOLDOWN_UNTIL = "BreedingCooldownUntil";
+    /** Old countdown that was never decremented: read as expired and removed by the Breeding Cage. */
+    public static final String LEGACY_BREEDING_COOLDOWN = "BreedingCooldown";
+
+    /** Vanilla AgeableMob age: negative for calves, positive while an adult can't breed. Saved only when not 0. */
+    public static final String AGE = "Age";
+
     public CapturedCowItem(Properties properties) {
         super(properties);
+    }
+
+    public static boolean isCalf(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.ENTITY_DATA);
+        return customData != null && customData.getUnsafe().getInt(AGE) < 0;
+    }
+
+    /** Writes the cow's age into captured cow data; adults with age 0 keep no key so they stay stackable. */
+    public static void saveAge(CompoundTag entityData, net.minecraft.world.entity.AgeableMob mob) {
+        if (mob.getAge() != 0) {
+            entityData.putInt(AGE, mob.getAge());
+        }
+    }
+
+    /** Remaining breeding cooldown in ticks, 0 when the cow can breed. */
+    public static long getBreedingCooldownRemaining(ItemStack stack, long gameTime) {
+        CustomData customData = stack.get(DataComponents.ENTITY_DATA);
+        if (customData == null || !customData.contains(BREEDING_COOLDOWN_UNTIL)) {
+            return 0;
+        }
+        return Math.max(0, customData.getUnsafe().getLong(BREEDING_COOLDOWN_UNTIL) - gameTime);
     }
 
     @Override
@@ -51,6 +80,7 @@ public class CapturedCowItem extends Item {
                 if (stack.has(DataComponents.CUSTOM_NAME)) {
                     cow.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
                 }
+                cow.setAge(tag.getInt(AGE));
                 cow.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
                 level.addFreshEntity(cow);
                 level.playSound(null, spawnPos, SoundEvents.COW_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -78,6 +108,7 @@ public class CapturedCowItem extends Item {
                     if (stack.has(DataComponents.CUSTOM_NAME)) {
                         cow.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
                     }
+                    cow.setAge(tag.getInt(AGE));
 
                     cow.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
                     level.addFreshEntity(cow);
@@ -102,6 +133,9 @@ public class CapturedCowItem extends Item {
             CompoundTag tag = customData.copyTag();
             if ("minecraft:cow".equals(tag.getString("id"))) {
                 tooltip.add(Component.translatable("entity.minecraft.cow").withStyle(ChatFormatting.GRAY));
+                if (tag.getInt(AGE) < 0) {
+                    tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.calf").withStyle(ChatFormatting.AQUA));
+                }
                 return;
             }
             if (tag.contains("CowDefinitionId")) {
@@ -115,7 +149,10 @@ public class CapturedCowItem extends Item {
                         tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.tier", def.tier())
                                 .withStyle(ChatFormatting.GOLD));
                     } else {
-                        tooltip.add(Component.literal("Cow: " + defId.getPath()).withStyle(ChatFormatting.RED));
+                        tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.unknown", defId.getPath()).withStyle(ChatFormatting.RED));
+                    }
+                    if (tag.getInt(AGE) < 0) {
+                        tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.calf").withStyle(ChatFormatting.AQUA));
                     }
                     
                     int cooldown = 0;
@@ -135,7 +172,9 @@ public class CapturedCowItem extends Item {
                                 .withStyle(ChatFormatting.GREEN));
                     }
 
-                    int breedingCooldown = tag.getInt("BreedingCooldown");
+                    Level level = context.level();
+                    int breedingCooldown = level == null ? 0
+                            : (int) Math.min(Integer.MAX_VALUE, getBreedingCooldownRemaining(stack, level.getGameTime()));
                     if (breedingCooldown > 0) {
                         int minutes = breedingCooldown / 1200;
                         int seconds = (breedingCooldown % 1200) / 20;
@@ -161,10 +200,7 @@ public class CapturedCowItem extends Item {
                 String idStr = tag.getString("CowDefinitionId");
                 ResourceLocation defId = ResourceLocation.tryParse(idStr);
                 if (defId != null) {
-                    CowDefinition def = com.productivecows.data.MaterialCowDataLoader.getDefinition(defId);
-                    if (def == null) {
-                        def = com.productivecows.network.ClientCowData.getDefinition(defId);
-                    }
+                    CowDefinition def = ProductiveCows.getDisplayDefinition(defId);
                     if (def != null) {
                         return Component.literal(def.name());
                     }

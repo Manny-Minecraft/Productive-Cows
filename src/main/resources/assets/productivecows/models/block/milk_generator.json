@@ -1,33 +1,200 @@
 {
-	"format_version": "1.21.11",
-	"credit": "Made with Blockbench",
-	"texture_size": [64, 64],
-	"textures": {
-		"0": "productivecows:block/mg_texture",
-		"particle": "productivecows:block/mg_texture"
-	},
-	"elements": [
-		{
-			"from": [0, 0, 0],
-			"to": [16, 16, 16],
-			"faces": {
-				"north": {"uv": [0, 0, 4, 4], "texture": "#0"},
-				"east": {"uv": [0, 4, 4, 8], "texture": "#0"},
-				"south": {"uv": [4, 0, 8, 4], "texture": "#0"},
-				"west": {"uv": [4, 4, 8, 8], "texture": "#0"},
-				"up": {"uv": [4, 12, 0, 8], "texture": "#0"},
-				"down": {"uv": [12, 0, 8, 4], "texture": "#0"}
-			}
-		}
-	],
-	"display": {
-		"thirdperson_righthand": {
-			"rotation": [44, 0, 0],
-			"scale": [0.23828, 0.23828, 0.23828]
-		},
-		"gui": {
-			"rotation": [-159, -33.5, -180],
-			"scale": [0.49609, 0.49609, 0.49609]
-		}
-	}
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "productivecows:block/milk_generator_side",
+    "front": "productivecows:block/milk_generator_front",
+    "side": "productivecows:block/milk_generator_side",
+    "iron": "minecraft:block/iron_block",
+    "stone": "minecraft:block/smooth_stone",
+    "tank": "productivecows:block/milk_tank_side",
+    "tank_top": "productivecows:block/milk_tank_top",
+    "copper": "minecraft:block/cut_copper",
+    "redstone": "minecraft:block/redstone_block"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        9,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#iron"
+        },
+        "down": {
+          "texture": "#stone"
+        }
+      },
+      "name": "casing"
+    },
+    {
+      "from": [
+        2,
+        9,
+        2
+      ],
+      "to": [
+        14,
+        15,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tank"
+        },
+        "south": {
+          "texture": "#tank"
+        },
+        "east": {
+          "texture": "#tank"
+        },
+        "west": {
+          "texture": "#tank"
+        },
+        "up": {
+          "texture": "#tank_top"
+        }
+      },
+      "name": "milk tank"
+    },
+    {
+      "from": [
+        6,
+        15,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron"
+        },
+        "south": {
+          "texture": "#iron"
+        },
+        "east": {
+          "texture": "#iron"
+        },
+        "west": {
+          "texture": "#iron"
+        },
+        "up": {
+          "texture": "#iron"
+        }
+      },
+      "name": "tank cap"
+    },
+    {
+      "from": [
+        11,
+        9,
+        14
+      ],
+      "to": [
+        13,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#copper"
+        },
+        "south": {
+          "texture": "#copper"
+        },
+        "east": {
+          "texture": "#copper"
+        },
+        "west": {
+          "texture": "#copper"
+        },
+        "up": {
+          "texture": "#copper"
+        }
+      },
+      "name": "pipe"
+    },
+    {
+      "from": [
+        -0.5,
+        3,
+        5
+      ],
+      "to": [
+        0,
+        6,
+        11
+      ],
+      "faces": {
+        "west": {
+          "texture": "#redstone"
+        },
+        "up": {
+          "texture": "#redstone"
+        },
+        "down": {
+          "texture": "#redstone"
+        },
+        "north": {
+          "texture": "#redstone"
+        },
+        "south": {
+          "texture": "#redstone"
+        }
+      },
+      "name": "output west"
+    },
+    {
+      "from": [
+        16,
+        3,
+        5
+      ],
+      "to": [
+        16.5,
+        6,
+        11
+      ],
+      "faces": {
+        "east": {
+          "texture": "#redstone"
+        },
+        "up": {
+          "texture": "#redstone"
+        },
+        "down": {
+          "texture": "#redstone"
+        },
+        "north": {
+          "texture": "#redstone"
+        },
+        "south": {
+          "texture": "#redstone"
+        }
+      },
+      "name": "output east"
+    }
+  ]
 }

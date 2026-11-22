@@ -32,8 +32,6 @@ public class ModFluids {
     public static final ResourceLocation LAVA_STILL = ResourceLocation.parse("minecraft:block/lava_still");
     public static final ResourceLocation LAVA_FLOWING = ResourceLocation.parse("minecraft:block/lava_flow");
     
-    public static final ResourceLocation MOLTEN_STILL = ResourceLocation.fromNamespaceAndPath(ProductiveCows.MODID, "block/molten_still");
-    public static final ResourceLocation MOLTEN_FLOWING = ResourceLocation.fromNamespaceAndPath(ProductiveCows.MODID, "block/molten_flow");
 
     public static final List<RegisteredFluid> ALL_FLUIDS = new ArrayList<>();
     public static final Map<String, RegisteredFluid> FLUIDS_MAP = new HashMap<>();
@@ -51,8 +49,9 @@ public class ModFluids {
         public RegisteredFluid(String name, int color, boolean isMolten) {
             this.name = name;
 
-            ResourceLocation still = isMolten ? MOLTEN_STILL : WATER_STILL;
-            ResourceLocation flowingTex = isMolten ? MOLTEN_FLOWING : WATER_FLOWING;
+            // Every fluid looks like water tinted with its colour; molten ones still behave like lava
+            ResourceLocation still = WATER_STILL;
+            ResourceLocation flowingTex = WATER_FLOWING;
 
             int density = isMolten ? 3000 : 1000;
             int viscosity = isMolten ? 6000 : 1000;
@@ -139,21 +138,22 @@ public class ModFluids {
     public static final RegisteredFluid LIQUID_ENDER = register("liquid_ender", "#0B4D42", false);
     public static final RegisteredFluid LIQUID_MILK = register("liquid_milk", "#FDFDFD", false);
 
-    // Conditional Fluids
-    public static final RegisteredFluid MOLTEN_ZINC = net.neoforged.fml.ModList.get().isLoaded("create") ? register("molten_zinc", "#8FB8A8", true) : null;
-    public static final RegisteredFluid MOLTEN_BRASS = net.neoforged.fml.ModList.get().isLoaded("create") ? register("molten_brass", "#E5BD54", true) : null;
+    // Fluids for other mods' metals: always registered so the registry never depends on the modpack.
+    // The cows that produce them are gated by neoforge:conditions in their JSON definitions.
+public static final RegisteredFluid MOLTEN_ZINC = register("molten_zinc", "#8FB8A8", true);
+    public static final RegisteredFluid MOLTEN_BRASS = register("molten_brass", "#E5BD54", true);
 
-    public static final RegisteredFluid MOLTEN_OSMIUM = net.neoforged.fml.ModList.get().isLoaded("mekanism") ? register("molten_osmium", "#9CB7C7", true) : null;
-    public static final RegisteredFluid MOLTEN_TIN = net.neoforged.fml.ModList.get().isLoaded("mekanism") || net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_tin", "#AAB9C4", true) : null;
-    public static final RegisteredFluid MOLTEN_LEAD = net.neoforged.fml.ModList.get().isLoaded("mekanism") || net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_lead", "#79808E", true) : null;
-    public static final RegisteredFluid MOLTEN_URANIUM = net.neoforged.fml.ModList.get().isLoaded("mekanism") ? register("molten_uranium", "#6F8E6B", true) : null;
+    public static final RegisteredFluid MOLTEN_OSMIUM = register("molten_osmium", "#9CB7C7", true);
+    public static final RegisteredFluid MOLTEN_TIN = register("molten_tin", "#AAB9C4", true);
+    public static final RegisteredFluid MOLTEN_LEAD = register("molten_lead", "#79808E", true);
+    public static final RegisteredFluid MOLTEN_URANIUM = register("molten_uranium", "#6F8E6B", true);
 
-    public static final RegisteredFluid MOLTEN_SILVER = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_silver", "#BFCAD1", true) : null;
-    public static final RegisteredFluid MOLTEN_NICKEL = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_nickel", "#C8C697", true) : null;
-    public static final RegisteredFluid MOLTEN_BRONZE = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_bronze", "#D4943E", true) : null;
-    public static final RegisteredFluid MOLTEN_ELECTRUM = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_electrum", "#F3D263", true) : null;
-    public static final RegisteredFluid MOLTEN_INVAR = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_invar", "#9BA09C", true) : null;
-    public static final RegisteredFluid MOLTEN_SIGNALUM = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_signalum", "#E45924", true) : null;
-    public static final RegisteredFluid MOLTEN_LUMIUM = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_lumium", "#F3EEA2", true) : null;
-    public static final RegisteredFluid MOLTEN_ENDERIUM = net.neoforged.fml.ModList.get().isLoaded("thermal") ? register("molten_enderium", "#186A6B", true) : null;
+    public static final RegisteredFluid MOLTEN_SILVER = register("molten_silver", "#BFCAD1", true);
+    public static final RegisteredFluid MOLTEN_NICKEL = register("molten_nickel", "#C8C697", true);
+    public static final RegisteredFluid MOLTEN_BRONZE = register("molten_bronze", "#D4943E", true);
+    public static final RegisteredFluid MOLTEN_ELECTRUM = register("molten_electrum", "#F3D263", true);
+    public static final RegisteredFluid MOLTEN_INVAR = register("molten_invar", "#9BA09C", true);
+    public static final RegisteredFluid MOLTEN_SIGNALUM = register("molten_signalum", "#E45924", true);
+    public static final RegisteredFluid MOLTEN_LUMIUM = register("molten_lumium", "#F3EEA2", true);
+    public static final RegisteredFluid MOLTEN_ENDERIUM = register("molten_enderium", "#186A6B", true);
 }

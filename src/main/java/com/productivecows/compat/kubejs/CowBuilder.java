@@ -2,7 +2,6 @@ package com.productivecows.compat.kubejs;
 
 import com.mojang.logging.LogUtils;
 import com.productivecows.data.CowDefinition;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
@@ -64,18 +63,18 @@ public class CowBuilder {
     }
 
     public CowBuilder parent1(String parent1) {
-        this.parent1 = ResourceLocation.parse(parent1);
+        this.parent1 = RegisterCowsEventKJS.parseCowId(parent1);
         return this;
     }
 
     public CowBuilder parent2(String parent2) {
-        this.parent2 = ResourceLocation.parse(parent2);
+        this.parent2 = RegisterCowsEventKJS.parseCowId(parent2);
         return this;
     }
 
     public CowBuilder parents(String parent1, String parent2) {
-        this.parent1 = ResourceLocation.parse(parent1);
-        this.parent2 = ResourceLocation.parse(parent2);
+        this.parent1 = RegisterCowsEventKJS.parseCowId(parent1);
+        this.parent2 = RegisterCowsEventKJS.parseCowId(parent2);
         return this;
     }
 
@@ -106,17 +105,12 @@ public class CowBuilder {
             return;
         }
         
-        if (!BuiltInRegistries.FLUID.containsKey(fluidId)) {
-            LOGGER.error("Cow {} references unknown fluid: {}", id, fluidId);
-            return;
-        }
-        
-        if (coolingResult != null && !BuiltInRegistries.ITEM.containsKey(coolingResult)) {
-            LOGGER.error("Cow {} references unknown item cooling result: {}", id, coolingResult);
-            return;
-        }
-
         CowDefinition def = new CowDefinition(id, name, tier, hexColor, fluidId, parent1, parent2, breedChance, baseYield, coolingResult, coolingResultTag);
+        String problem = com.productivecows.data.MaterialCowDataLoader.validate(def);
+        if (problem != null) {
+            LOGGER.error("Skipping KubeJS cow {}: {}", id, problem);
+            return;
+        }
         event.register(id, def);
     }
 }

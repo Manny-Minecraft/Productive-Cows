@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    " I ",
+    "IRI",
+    " I "
+  ],
+  "result": {
+    "count": 3,
+    "id": "productivecows:base_upgrade"
+  }
+}

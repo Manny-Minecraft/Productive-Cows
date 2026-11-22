@@ -38,7 +38,9 @@ import java.util.ArrayList;
 public class MaterialCowEntity extends Cow {
 
     private static final EntityDataAccessor<String> COW_DEFINITION_ID = SynchedEntityData.defineId(MaterialCowEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Integer> MILKING_COOLDOWN = SynchedEntityData.defineId(MaterialCowEntity.class, EntityDataSerializers.INT);
+
+    // Server-only: the client never reads it (Jade gets it from server data), so it is not synced entity data
+    private int milkingCooldown;
 
     public MaterialCowEntity(EntityType<? extends Cow> type, Level level) {
         super(type, level);
@@ -52,7 +54,6 @@ public class MaterialCowEntity extends Cow {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(COW_DEFINITION_ID, "");
-        builder.define(MILKING_COOLDOWN, 0);
     }
 
     public void setCowDefinitionId(ResourceLocation id) {
@@ -78,11 +79,11 @@ public class MaterialCowEntity extends Cow {
     }
 
     public int getMilkingCooldown() {
-        return this.entityData.get(MILKING_COOLDOWN);
+        return this.milkingCooldown;
     }
 
     public void setMilkingCooldown(int ticks) {
-        this.entityData.set(MILKING_COOLDOWN, ticks);
+        this.milkingCooldown = Math.max(0, ticks);
     }
 
     @Override
@@ -110,7 +111,7 @@ public class MaterialCowEntity extends Cow {
         if (tag.contains("CowDefinitionId")) {
             String idStr = tag.getString("CowDefinitionId");
             if (!idStr.isEmpty()) {
-                setCowDefinitionId(ResourceLocation.tryParse(idStr));
+                setCowDefinitionId(MaterialCowDataLoader.resolveId(ResourceLocation.tryParse(idStr)));
             }
         }
         if (tag.contains("MilkingCooldown")) {
@@ -153,7 +154,7 @@ public class MaterialCowEntity extends Cow {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        // Milking logic with empty bucket
+        // Milking logic with empty bucket; feedback goes to the action bar, not the chat
         if (itemstack.is(Items.BUCKET) && !this.isBaby()) {
             if (!this.level().isClientSide) {
                 CowDefinition definition = getCowDefinition();
@@ -177,17 +178,17 @@ public class MaterialCowEntity extends Cow {
                                 this.setMilkingCooldown(24000);
                                 return InteractionResult.SUCCESS;
                             } else {
-                                player.sendSystemMessage(Component.literal("The fluid '" + fluidId + "' does not have an associated bucket registered!"));
+                                player.displayClientMessage(Component.translatable("message.productivecows.cow.no_bucket", fluidId.toString()), true);
                             }
                         } else {
-                            player.sendSystemMessage(Component.literal("The fluid '" + fluidId + "' is not registered or does not exist!"));
+                            player.displayClientMessage(Component.translatable("message.productivecows.cow.unknown_fluid", fluidId.toString()), true);
                         }
                     } else {
                         int remainingSeconds = this.getMilkingCooldown() / 20;
-                        player.sendSystemMessage(Component.literal("This cow is not ready to be milked! Cooldown remaining: " + remainingSeconds + " seconds."));
+                        player.displayClientMessage(Component.translatable("message.productivecows.cow.not_ready", remainingSeconds), true);
                     }
                 } else {
-                    player.sendSystemMessage(Component.literal("This cow has no dynamic material definition assigned!"));
+                    player.displayClientMessage(Component.translatable("message.productivecows.cow.no_definition"), true);
                 }
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);

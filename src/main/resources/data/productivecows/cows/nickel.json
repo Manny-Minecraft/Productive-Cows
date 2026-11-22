@@ -1,11 +1,14 @@
 {
+  "neoforge:conditions": [
+    { "type": "neoforge:mod_loaded", "modid": "thermal" }
+  ],
   "name": "Nickel",
   "tier": 3,
   "fluid": "productivecows:molten_nickel",
   "hex_color": "#C8C697",
-  "breedChance": 0.15,
-  "baseYield": 100,
+  "breed_chance": 0.15,
+  "base_yield": 100,
   "parent1": "productivecows:iron",
-  "parent2": "productivecows:copper",
+  "parent2": "productivecows:tin",
   "cooling_result_tag": "c:ingots/nickel"
 }

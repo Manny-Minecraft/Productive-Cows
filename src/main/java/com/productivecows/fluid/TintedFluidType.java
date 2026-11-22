@@ -8,6 +8,9 @@ import java.util.function.Consumer;
 
 public class TintedFluidType extends FluidType {
     
+    private static final ResourceLocation WATER_OVERLAY = ResourceLocation.withDefaultNamespace("block/water_overlay");
+    private static final ResourceLocation UNDERWATER = ResourceLocation.withDefaultNamespace("textures/misc/underwater.png");
+
     private final int tintColor;
     private final ResourceLocation stillTexture;
     private final ResourceLocation flowingTexture;
@@ -33,9 +36,26 @@ public class TintedFluidType extends FluidType {
             }
 
             @Override
+            public ResourceLocation getOverlayTexture() {
+                return WATER_OVERLAY;
+            }
+
+            @Override
+            public ResourceLocation getRenderOverlayTexture(net.minecraft.client.Minecraft mc) {
+                return UNDERWATER;
+            }
+
+            @Override
             public int getTintColor() {
-                // Ensure fully opaque ARGB by combining 0xFF000000 with the RGB color
+                // Opaque tint: the transparency comes from the water texture itself
                 return 0xFF000000 | tintColor;
+            }
+
+            @Override
+            public org.joml.Vector3f modifyFogColor(net.minecraft.client.Camera camera, float partialTick, net.minecraft.client.multiplayer.ClientLevel level,
+                                                    int renderDistance, float darkenWorldAmount, org.joml.Vector3f fluidFogColor) {
+                // Seen from inside, the fluid tints the fog with its own colour, like water does
+                return new org.joml.Vector3f(((tintColor >> 16) & 0xFF) / 255f, ((tintColor >> 8) & 0xFF) / 255f, (tintColor & 0xFF) / 255f);
             }
         });
     }

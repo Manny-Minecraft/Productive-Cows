@@ -35,7 +35,8 @@ public class CowCageMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(cage.getInventory(), 0, 129, 34) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.is(ProductiveCows.CAPTURED_COW.get()) || stack.is(ProductiveCows.MATERIAL_COW_SPAWN_EGG.get());
+                    return (stack.is(ProductiveCows.CAPTURED_COW.get()) || stack.is(ProductiveCows.MATERIAL_COW_SPAWN_EGG.get()))
+                            && !com.productivecows.item.CapturedCowItem.isCalf(stack);
                 }
 
                 @Override

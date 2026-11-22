@@ -7,6 +7,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.Tags;
 
@@ -20,8 +21,7 @@ public class ModRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(RecipeOutput output) {
-
-        // Breeding Cage: Iron bars around hay block
+        // Breeding Cage: iron bars around a hay block
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.BREEDING_CAGE_ITEM.get())
                 .pattern("III")
                 .pattern("IHI")
@@ -31,7 +31,7 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_iron_bars", has(Items.IRON_BARS))
                 .save(output);
 
-        // Cow Cage: Iron bars around a bucket
+        // Cow Cage: iron bars around a bucket
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.COW_CAGE_ITEM.get())
                 .pattern("III")
                 .pattern("IBI")
@@ -41,18 +41,18 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_bucket", has(Items.BUCKET))
                 .save(output);
 
-        // Basic Liquid Cooler: Iron ingots around redstone and glass
+        // Liquid Cooler: iron casing with glass and redstone
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.LIQUID_COOLER_ITEM.get())
                 .pattern("IGI")
                 .pattern("IRI")
                 .pattern("III")
                 .define('I', Tags.Items.INGOTS_IRON)
-                .define('G', Items.GLASS)
+                .define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
                 .define('R', Tags.Items.DUSTS_REDSTONE)
                 .unlockedBy("has_iron", has(Tags.Items.INGOTS_IRON))
                 .save(output);
 
-        // Advanced Cooler: Basic Cooler surrounded by Gold and Diamond
+        // Advanced Cooler: liquid cooler surrounded by gold and diamonds
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.ADVANCED_COOLER_ITEM.get())
                 .pattern("DGD")
                 .pattern("GCG")
@@ -63,45 +63,54 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_liquid_cooler", has(ProductiveCows.LIQUID_COOLER_ITEM.get()))
                 .save(output);
 
-        // Speed Upgrade: Sugar and Redstone around Iron
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.SPEED_UPGRADE.get())
-                .pattern("SRS")
-                .pattern("RIR")
-                .pattern("SRS")
-                .define('S', Items.SUGAR)
-                .define('R', Tags.Items.DUSTS_REDSTONE)
+        // Milk Generator: iron casing with a bucket, a furnace and redstone
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.MILK_GENERATOR_ITEM.get())
+                .pattern("IBI")
+                .pattern("RFR")
+                .pattern("III")
                 .define('I', Tags.Items.INGOTS_IRON)
-                .unlockedBy("has_sugar", has(Items.SUGAR))
-                .save(output);
-
-        // Efficiency Upgrade: Redstone and Gold
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.EFFICIENCY_UPGRADE.get())
-                .pattern(" R ")
-                .pattern("RGR")
-                .pattern(" R ")
+                .define('B', Items.BUCKET)
                 .define('R', Tags.Items.DUSTS_REDSTONE)
-                .define('G', Tags.Items.INGOTS_GOLD)
-                .unlockedBy("has_gold", has(Tags.Items.INGOTS_GOLD))
+                .define('F', Items.FURNACE)
+                .unlockedBy("has_bucket", has(Items.BUCKET))
                 .save(output);
 
-        // Energy Upgrade: Redstone and Diamond
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.ENERGY_UPGRADE.get())
-                .pattern(" R ")
-                .pattern("RDR")
-                .pattern(" R ")
+        // Base Upgrade (x3): iron and redstone
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.BASE_UPGRADE.get(), 3)
+                .pattern(" I ")
+                .pattern("IRI")
+                .pattern(" I ")
+                .define('I', Tags.Items.INGOTS_IRON)
                 .define('R', Tags.Items.DUSTS_REDSTONE)
-                .define('D', Tags.Items.GEMS_DIAMOND)
-                .unlockedBy("has_diamond", has(Tags.Items.GEMS_DIAMOND))
+                .unlockedBy("has_redstone", has(Tags.Items.DUSTS_REDSTONE))
                 .save(output);
 
-        // Cow Stick: Stick and Leather
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ProductiveCows.SPEED_UPGRADE.get())
+                .requires(ProductiveCows.BASE_UPGRADE.get())
+                .requires(Items.SUGAR)
+                .unlockedBy("has_base_upgrade", has(ProductiveCows.BASE_UPGRADE.get()))
+                .save(output);
+
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ProductiveCows.EFFICIENCY_UPGRADE.get())
+                .requires(ProductiveCows.BASE_UPGRADE.get())
+                .requires(Tags.Items.DUSTS_GLOWSTONE)
+                .unlockedBy("has_base_upgrade", has(ProductiveCows.BASE_UPGRADE.get()))
+                .save(output);
+
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ProductiveCows.ENERGY_UPGRADE.get())
+                .requires(ProductiveCows.BASE_UPGRADE.get())
+                .requires(Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy("has_base_upgrade", has(ProductiveCows.BASE_UPGRADE.get()))
+                .save(output);
+
+        // Cow Stick: sticks and leather
         ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ProductiveCows.COW_STICK.get())
                 .pattern("  L")
                 .pattern(" S ")
                 .pattern("S  ")
-                .define('L', Items.LEATHER)
+                .define('L', Tags.Items.LEATHERS)
                 .define('S', Tags.Items.RODS_WOODEN)
-                .unlockedBy("has_leather", has(Items.LEATHER))
+                .unlockedBy("has_leather", has(Tags.Items.LEATHERS))
                 .save(output);
     }
 }
