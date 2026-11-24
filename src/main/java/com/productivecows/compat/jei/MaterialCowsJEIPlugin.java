@@ -107,6 +107,12 @@ public class MaterialCowsJEIPlugin implements IModPlugin {
             }
         }
         registration.addRecipes(GeneratorFuelCategory.FUEL_TYPE, fuelRecipes);
+
+        // How to build the Cooler multiblock, on each of its blocks
+        for (var block : List.of(ProductiveCows.COOLER_CONTROLLER_ITEM, ProductiveCows.COOLER_BLOCK_ITEM, ProductiveCows.COOLER_TANK_ITEM,
+                ProductiveCows.COOLER_PORT_ITEM, ProductiveCows.COOLER_STAMP_ITEM)) {
+            registration.addItemStackInfo(new ItemStack(block.get()), net.minecraft.network.chat.Component.translatable("jei.productivecows.cooler_info"));
+        }
     }
 
     @Override
@@ -116,6 +122,7 @@ public class MaterialCowsJEIPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ProductiveCows.COW_CAGE_ITEM.get()), MilkingRecipeCategory.MILKING_TYPE);
         registration.addRecipeCatalyst(new ItemStack(ProductiveCows.LIQUID_COOLER_ITEM.get()), CoolerRecipeCategory.COOLER_TYPE);
         registration.addRecipeCatalyst(new ItemStack(ProductiveCows.ADVANCED_COOLER_ITEM.get()), CoolerRecipeCategory.COOLER_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ProductiveCows.COOLER_CONTROLLER_ITEM.get()), CoolerRecipeCategory.COOLER_TYPE);
         registration.addRecipeCatalyst(new ItemStack(ProductiveCows.MILK_GENERATOR_ITEM.get()), GeneratorFuelCategory.FUEL_TYPE);
     }
 
@@ -126,5 +133,9 @@ public class MaterialCowsJEIPlugin implements IModPlugin {
         registration.addRecipeClickArea(com.productivecows.client.screen.LiquidCoolerScreen.class, 83, 37, 39, 12, CoolerRecipeCategory.COOLER_TYPE);
         registration.addRecipeClickArea(com.productivecows.client.screen.AdvancedCoolerScreen.class, 83, 37, 39, 12, CoolerRecipeCategory.COOLER_TYPE);
         registration.addRecipeClickArea(com.productivecows.client.screen.CowCageScreen.class, 127, 47, 20, 12, MilkingRecipeCategory.MILKING_TYPE);
+        registration.addRecipeClickArea(com.productivecows.client.screen.CoolerControllerScreen.class,
+                com.productivecows.client.screen.CoolerControllerScreen.PROGRESS_X, com.productivecows.client.screen.CoolerControllerScreen.PROGRESS_Y - 4,
+                com.productivecows.client.screen.CoolerControllerScreen.PROGRESS_W, com.productivecows.client.screen.CoolerControllerScreen.PROGRESS_H + 8,
+                CoolerRecipeCategory.COOLER_TYPE);
     }
 }

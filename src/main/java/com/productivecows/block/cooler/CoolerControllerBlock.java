@@ -69,6 +69,20 @@ public class CoolerControllerBlock extends CoolerPartBlock implements EntityBloc
     }
 
     @Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                                                Player player, net.minecraft.world.InteractionHand hand, BlockHitResult hitResult) {
+        // A bucket (or any fluid container) with fluid in it is poured into the tower instead of opening the GUI
+        if (net.neoforged.neoforge.fluids.FluidUtil.getFluidContained(stack).isEmpty()) {
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof CoolerControllerBlockEntity controller
+                && !controller.pourFrom(player, hand)) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.productivecows.cooler.fluid_refused"), true);
+        }
+        return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof CoolerControllerBlockEntity controller) {
             // A formed tower opens its GUI; sneaking, or an incomplete tower, reports the tower's state instead

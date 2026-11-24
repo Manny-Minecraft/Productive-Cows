@@ -60,6 +60,20 @@ Invalid definitions (unknown fluid or cooling item, malformed tag, `breed_chance
 
 ---
 
+## Cooler Multiblock (End Game)
+
+A 3x3 tower, from 3 to 10 blocks tall, that cools many fluids at once:
+
+- **Cooler Casing**: the frame. All corners are Casing, as are the bottom and top layers (except for Ports or the Controller).
+- **Cooler Controller**: one per tower, with its screen facing out. Right-click opens the GUI; sneak + right-click tells you what is wrong with an unfinished tower. Right-click it with a bucket to pour the fluid in.
+- **Cooler Tank**: inner layers only, up to 8. Each Tank lets the tower hold one more fluid and adds `coolerTankCapacity` mB (16000) to the capacity all fluids share.
+- **Cooler Stamp**: the centre of each inner layer. Each Stamp cools 2 ingots per cycle (`coolerCycleTicks`, 7 s) and uses `coolerEnergyPerStamp` RF/t (60) while working.
+- **Cooler Port**: right-click to switch between input (fluids and RF) and output (ingots, pushed into adjacent inventories).
+
+A full 3x10x3 tower has 8 Stamps and cools 16 ingots at a time.
+
+---
+
 ## Issues and Bug Reports
 
 Found a bug or have a suggestion? We'd love to hear it! 

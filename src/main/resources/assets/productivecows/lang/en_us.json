@@ -175,5 +175,16 @@
   "gui.productivecows.cooler.fluid_locked": "Add a Cooler Tank to store one more fluid",
   "gui.productivecows.cooler.shared": "Shared: %s / %s mB",
   "message.productivecows.cooler.port_input": "Cooler Port: input (fluids and energy)",
-  "message.productivecows.cooler.port_output": "Cooler Port: output (items)"
+  "message.productivecows.cooler.port_output": "Cooler Port: output (items)",
+  "message.productivecows.cooler.fluid_refused": "This fluid can't go in: it can't be cooled, the tower is full, or it needs another Tank for a new fluid",
+  "gui.productivecows.cooler.idle": "Idle: needs at least 1000 mB of a fluid and room in the output",
+  "gui.productivecows.cooler.cycle": "%s ingots with %s Stamps",
+  "gui.productivecows.cooler.no_power": "Paused: needs %s RF/t",
+  "tooltip.productivecows.jade.cooler.size": "3×%s×3 · %s Stamps · %s Tanks",
+  "tooltip.productivecows.jade.cooler.fluids": "Fluids: %s / %s · %s / %s mB",
+  "tooltip.productivecows.jade.cooler.not_formed": "Tower not formed",
+  "tooltip.productivecows.jade.cooler.port_input": "Mode: input",
+  "tooltip.productivecows.jade.cooler.port_output": "Mode: output",
+  "config.jade.plugin_productivecows.cooler_tower": "Productive Cows: Cooler Tower",
+  "jei.productivecows.cooler_info": "Cooler multiblock: a 3x3 tower, 3 to 10 blocks tall. Bottom and top layers are full; the inner layers are a ring with a Cooler Stamp (or air) in the centre. Corners are Cooler Casing. You need one Cooler Controller (screen facing out), at least one Cooler Port and one Cooler Tank (inner layers only, at most 8). Each Stamp cools 2 ingots at a time; each Tank stores one more fluid and adds to the shared capacity. Right-click a Port to switch input and output."
 }

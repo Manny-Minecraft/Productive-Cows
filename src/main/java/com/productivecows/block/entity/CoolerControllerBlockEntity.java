@@ -10,6 +10,7 @@ import com.productivecows.menu.SplitInt;
 import com.productivecows.multiblock.CoolerPart;
 import com.productivecows.multiblock.CoolerStructure;
 import com.productivecows.multiblock.MultiFluidStorage;
+import com.productivecows.multiblock.StampPlanner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -36,10 +37,12 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,11 +51,19 @@ import java.util.Set;
 /**
  * Brain of the Cooler tower. Rechecks the structure every second and switches the {@code formed} state of its
  * blocks, binds the Ports, and holds the shared fluid storage (one fluid type and {@code coolerTankCapacity} mB
- * per Tank), the energy buffer and the output buffer. Cooling itself arrives in milestone M4.
+ * per Tank), the energy buffer and the output buffer.
+ * <p>
+ * Cooling runs in cycles: at the start of a cycle {@link StampPlanner} shares the Stamps out among the stored
+ * fluids (2 ingots per Stamp, 1000 mB per ingot); while the cycle runs every busy Stamp costs
+ * {@code coolerEnergyPerStamp} RF/t, and without enough energy the cycle pauses. At the end the fluid is drained
+ * and the ingots go to the output buffer, which output Ports empty into the inventories next to them.
  */
 public class CoolerControllerBlockEntity extends BlockEntity implements MenuProvider {
     private static final int CHECK_INTERVAL = 20;
     public static final int OUTPUT_SLOTS = 9;
+    /** mB one ingot costs, as in the other coolers. */
+    public static final int FLUID_PER_INGOT = 1000;
+    private static final int PUSH_INTERVAL = 10;
     /** Fluid types the GUI can show: the structure allows at most this many Tanks. */
     public static final int MAX_FLUIDS = CoolerStructure.MAX_TANKS;
 
@@ -61,6 +72,15 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
     private CoolerStructure.Result structure;
 
     private final MultiFluidStorage<Fluid> fluids = new MultiFluidStorage<>();
+
+    // Current cycle: ingots per fluid, busy Stamps and progress. Not saved: the fluid is only drained when a cycle
+    // ends, so after a reload the cycle simply starts again
+    private Map<Fluid, Integer> cycle = Map.of();
+    private int activeStamps;
+    private int progress;
+    private int rotation;
+    /** Cooling result per fluid, refreshed with the structure check (cow definitions can be reloaded). */
+    private final Map<Fluid, ItemStack> results = new HashMap<>();
 
     private final EnergyBuffer energy = new EnergyBuffer(Math.max(1000, Config.coolerEnergyCapacity));
 
@@ -72,6 +92,10 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
 
         void set(int value) {
             energy = Math.max(0, Math.min(capacity, value));
+        }
+
+        void consume(int value) {
+            energy = Math.max(0, energy - value);
         }
 
         @Override
@@ -114,6 +138,11 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
         return structure;
     }
 
+    /** Pours a fluid container the player holds into the tower; false if nothing went in. */
+    public boolean pourFrom(Player player, net.minecraft.world.InteractionHand hand) {
+        return isFormed() && net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(player, hand, fluidInput);
+    }
+
     public IFluidHandler getFluidInput() {
         return fluidInput;
     }
@@ -130,6 +159,18 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
         return output;
     }
 
+    public int fluidCapacity() {
+        return fluids.capacity();
+    }
+
+    public int progress() {
+        return progress;
+    }
+
+    public int cycleTicks() {
+        return Math.max(1, Config.coolerCycleTicks);
+    }
+
     public void serverTick() {
         // Spread Controllers over the interval instead of checking them all on the same tick. A tower crossing a
         // chunk that isn't loaded can't be judged: keep the current state until it loads
@@ -137,12 +178,179 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
                 && level.isAreaLoaded(worldPosition, 2)) {
             recheck();
         }
+        if (!isFormed()) {
+            resetCycle();
+            return;
+        }
+        tickCooling();
+        if (Math.floorMod(level.getGameTime() + worldPosition.asLong(), PUSH_INTERVAL) == 0) {
+            pushOutput();
+        }
+    }
+
+    // ------------------------------------------------------------------ cooling
+
+    private void tickCooling() {
+        if (cycle.isEmpty()) {
+            StampPlanner.Plan<Fluid> plan = StampPlanner.plan(fluids.contents(), fluid -> !coolingResult(fluid).isEmpty(),
+                    structure.stamps(), CoolerStructure.INGOTS_PER_STAMP, FLUID_PER_INGOT, rotation);
+            if (plan.isEmpty() || !outputFits(plan.ingots())) {
+                return;
+            }
+            cycle = plan.ingots();
+            activeStamps = plan.activeStamps();
+            progress = 0;
+            rotation++;
+        }
+        int cost = activeStamps * Math.max(0, Config.coolerEnergyPerStamp);
+        if (energy.getEnergyStored() < cost) {
+            return; // paused until there is power again
+        }
+        energy.consume(cost);
+        if (++progress >= cycleTicks()) {
+            finishCycle();
+        }
+        setChanged();
+    }
+
+    private void finishCycle() {
+        for (Map.Entry<Fluid, Integer> entry : cycle.entrySet()) {
+            Fluid fluid = entry.getKey();
+            // The fluid may have changed during the cycle: cool only what is still there
+            int ingots = Math.min(entry.getValue(), fluids.amount(fluid) / FLUID_PER_INGOT);
+            ItemStack result = coolingResult(fluid);
+            if (ingots > 0 && !result.isEmpty()) {
+                fluids.drain(fluid, ingots * FLUID_PER_INGOT, false);
+                insertOutput(result.copyWithCount(ingots), false);
+            }
+        }
+        resetCycle();
+    }
+
+    private void resetCycle() {
+        if (!cycle.isEmpty() || progress != 0) {
+            cycle = Map.of();
+            activeStamps = 0;
+            progress = 0;
+            setChanged();
+        }
+    }
+
+    public int activeStamps() {
+        return activeStamps;
+    }
+
+    public int cycleIngots() {
+        return cycle.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    /** What a fluid cools into, like the other coolers: the cow's item, or the first item of its tag. */
+    private ItemStack coolingResult(Fluid fluid) {
+        return results.computeIfAbsent(fluid, f -> {
+            ResourceLocation key = BuiltInRegistries.FLUID.getKey(f);
+            for (CowDefinition def : ProductiveCows.getDefinitions(level).values()) {
+                if (!def.fluidId().equals(key)) {
+                    continue;
+                }
+                if (def.coolingResult() != null) {
+                    return new ItemStack(BuiltInRegistries.ITEM.get(def.coolingResult()));
+                }
+                ResourceLocation tagId = def.coolingResultTag() == null ? null : ResourceLocation.tryParse(def.coolingResultTag());
+                if (tagId != null) {
+                    var tag = BuiltInRegistries.ITEM.getTag(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, tagId));
+                    if (tag.isPresent() && tag.get().size() > 0) {
+                        return new ItemStack(tag.get().get(0).value());
+                    }
+                }
+            }
+            return ItemStack.EMPTY;
+        });
+    }
+
+    /** Whether every result of a planned cycle fits in the output buffer. */
+    private boolean outputFits(Map<Fluid, Integer> ingots) {
+        List<ItemStack> slots = new ArrayList<>();
+        for (int i = 0; i < output.getSlots(); i++) {
+            slots.add(output.getStackInSlot(i).copy());
+        }
+        for (Map.Entry<Fluid, Integer> entry : ingots.entrySet()) {
+            if (!merge(slots, coolingResult(entry.getKey()).copyWithCount(entry.getValue())).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Puts items in the output buffer (which refuses them from outside); returns what didn't fit. */
+    private ItemStack insertOutput(ItemStack stack, boolean simulate) {
+        List<ItemStack> slots = new ArrayList<>();
+        for (int i = 0; i < output.getSlots(); i++) {
+            slots.add(output.getStackInSlot(i).copy());
+        }
+        ItemStack rest = merge(slots, stack);
+        if (!simulate) {
+            for (int i = 0; i < slots.size(); i++) {
+                if (!ItemStack.matches(slots.get(i), output.getStackInSlot(i))) {
+                    output.setStackInSlot(i, slots.get(i));
+                }
+            }
+        }
+        return rest;
+    }
+
+    private static ItemStack merge(List<ItemStack> slots, ItemStack stack) {
+        ItemStack rest = stack.copy();
+        for (int pass = 0; pass < 2 && !rest.isEmpty(); pass++) {
+            for (int i = 0; i < slots.size() && !rest.isEmpty(); i++) {
+                ItemStack slot = slots.get(i);
+                if (pass == 0 && !slot.isEmpty() && ItemStack.isSameItemSameComponents(slot, rest)) {
+                    int moved = Math.min(rest.getCount(), slot.getMaxStackSize() - slot.getCount());
+                    slot.grow(moved);
+                    rest.shrink(moved);
+                } else if (pass == 1 && slot.isEmpty()) {
+                    slots.set(i, rest.copy());
+                    rest = ItemStack.EMPTY;
+                }
+            }
+        }
+        return rest;
+    }
+
+    /** Output Ports hand the buffer's items to the inventories next to them (not to the tower itself). */
+    private void pushOutput() {
+        for (BlockPos portPos : structure.ports()) {
+            BlockState state = level.getBlockState(portPos);
+            if (!state.hasProperty(com.productivecows.block.cooler.CoolerPortBlock.MODE)
+                    || state.getValue(com.productivecows.block.cooler.CoolerPortBlock.MODE) != com.productivecows.block.cooler.CoolerPortBlock.Mode.OUTPUT) {
+                continue;
+            }
+            for (net.minecraft.core.Direction side : net.minecraft.core.Direction.values()) {
+                BlockPos target = portPos.relative(side);
+                if (!level.isLoaded(target) || level.getBlockState(target).getBlock() instanceof CoolerPartBlock) {
+                    continue;
+                }
+                IItemHandler inventory = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, target, side.getOpposite());
+                if (inventory == null) {
+                    continue;
+                }
+                for (int i = 0; i < output.getSlots(); i++) {
+                    ItemStack stack = output.getStackInSlot(i);
+                    if (!stack.isEmpty()) {
+                        ItemStack rest = ItemHandlerHelper.insertItem(inventory, stack.copy(), false);
+                        if (rest.getCount() != stack.getCount()) {
+                            output.setStackInSlot(i, rest);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ structure
 
     /** Checks the tower now and updates the formed blocks; returns the outcome. */
     public CoolerStructure.Result recheck() {
+        results.clear();
         CoolerStructure.Result result = CoolerStructure.check(worldPosition, facing(),
                 pos -> CoolerPartBlock.partOf(level.getBlockState(pos)));
         apply(result);
@@ -323,6 +531,10 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
                 case CoolerControllerMenu.TANKS -> s != null && s.formed() ? s.tanks() : 0;
                 case CoolerControllerMenu.STAMPS -> s != null && s.formed() ? s.stamps() : 0;
                 case CoolerControllerMenu.HEIGHT -> s != null && s.formed() ? s.height() : 0;
+                case CoolerControllerMenu.PROGRESS -> progress;
+                case CoolerControllerMenu.CYCLE_TICKS -> cycleTicks();
+                case CoolerControllerMenu.ACTIVE_STAMPS -> activeStamps;
+                case CoolerControllerMenu.CYCLE_INGOTS -> cycleIngots();
                 default -> fluidData(index - CoolerControllerMenu.FLUIDS);
             };
         }

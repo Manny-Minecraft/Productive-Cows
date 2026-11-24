@@ -42,6 +42,13 @@ public class Config {
             .comment("RF the Cooler multiblock's Controller can store.")
             .defineInRange("coolerEnergyCapacity", 200000, 1000, Integer.MAX_VALUE);
 
+    private static final ModConfigSpec.IntValue COOLER_CYCLE_TICKS = BUILDER
+            .comment("Ticks a Cooler multiblock cycle lasts (20 ticks = 1 second). Every Stamp cools 2 ingots per cycle.")
+            .defineInRange("coolerCycleTicks", 140, 1, Integer.MAX_VALUE);
+    private static final ModConfigSpec.IntValue COOLER_ENERGY_PER_STAMP = BUILDER
+            .comment("RF per tick each busy Stamp of the Cooler multiblock consumes.")
+            .defineInRange("coolerEnergyPerStamp", 60, 0, Integer.MAX_VALUE);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int breedingCooldownTicks;
@@ -55,6 +62,8 @@ public class Config {
 
     public static int coolerTankCapacity;
     public static int coolerEnergyCapacity;
+    public static int coolerCycleTicks;
+    public static int coolerEnergyPerStamp;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -71,5 +80,7 @@ public class Config {
 
         coolerTankCapacity = COOLER_TANK_CAPACITY.get();
         coolerEnergyCapacity = COOLER_ENERGY_CAPACITY.get();
+        coolerCycleTicks = COOLER_CYCLE_TICKS.get();
+        coolerEnergyPerStamp = COOLER_ENERGY_PER_STAMP.get();
     }
 }

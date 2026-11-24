@@ -25,8 +25,12 @@ public class CoolerControllerMenu extends AbstractContainerMenu {
     public static final int TANKS = 6;
     public static final int STAMPS = 7;
     public static final int HEIGHT = 8;
+    public static final int PROGRESS = 9;
+    public static final int CYCLE_TICKS = 10;
+    public static final int ACTIVE_STAMPS = 11;
+    public static final int CYCLE_INGOTS = 12;
     /** Then three slots per fluid: registry id, amount low half, amount high half. */
-    public static final int FLUIDS = 9;
+    public static final int FLUIDS = 13;
     public static final int DATA_COUNT = FLUIDS + CoolerControllerBlockEntity.MAX_FLUIDS * 3;
     /** Fluid gauges in the GUI: one per Tank the tower can have. */
     public static final int FLUIDS_SHOWN = CoolerControllerBlockEntity.MAX_FLUIDS;
@@ -96,6 +100,22 @@ public class CoolerControllerMenu extends AbstractContainerMenu {
 
     public int getHeight() {
         return data.get(HEIGHT);
+    }
+
+    public int getProgress() {
+        return data.get(PROGRESS);
+    }
+
+    public int getCycleTicks() {
+        return data.get(CYCLE_TICKS);
+    }
+
+    public int getActiveStamps() {
+        return data.get(ACTIVE_STAMPS);
+    }
+
+    public int getCycleIngots() {
+        return data.get(CYCLE_INGOTS);
     }
 
     public Fluid getFluid(int slot) {

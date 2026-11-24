@@ -35,6 +35,12 @@ public class CoolerPortBlockEntity extends BlockEntity {
         }
     }
 
+    /** The formed tower this Port belongs to, if any. */
+    @Nullable
+    public CoolerControllerBlockEntity boundController() {
+        return controller();
+    }
+
     @Nullable
     private CoolerControllerBlockEntity controller() {
         if (controllerPos == null || level == null || !level.isLoaded(controllerPos)) {

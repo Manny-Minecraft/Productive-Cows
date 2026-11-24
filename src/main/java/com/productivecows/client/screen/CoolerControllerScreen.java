@@ -29,6 +29,11 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
     static final int GAUGE_STEP = 15;
     static final int ENERGY_X = 155;
     static final int ENERGY_W = 12;
+    // Progress bar, right of the "Output" label; JEI's click area covers it too
+    public static final int PROGRESS_X = 48;
+    public static final int PROGRESS_Y = 69;
+    public static final int PROGRESS_W = 120;
+    public static final int PROGRESS_H = 3;
 
     public CoolerControllerScreen(CoolerControllerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -67,6 +72,12 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
             }
         }
 
+        graphics.fill(x + PROGRESS_X, y + PROGRESS_Y, x + PROGRESS_X + PROGRESS_W, y + PROGRESS_Y + PROGRESS_H, 0xFF373737);
+        if (menu.getProgress() > 0 && menu.getCycleTicks() > 0) {
+            int w = Math.min(PROGRESS_W, menu.getProgress() * PROGRESS_W / menu.getCycleTicks());
+            graphics.fillGradient(x + PROGRESS_X, y + PROGRESS_Y, x + PROGRESS_X + w, y + PROGRESS_Y + PROGRESS_H, 0xFF00F0FF, 0xFF00FF88);
+        }
+
         int energy = menu.getEnergy();
         int maxEnergy = menu.getMaxEnergy();
         if (energy > 0 && maxEnergy > 0) {
@@ -84,7 +95,7 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
             Component size = Component.translatable("gui.productivecows.cooler.size", menu.getHeight(), menu.getStamps());
             graphics.drawString(font, size, imageWidth - 8 - font.width(size), titleLabelY, 0x404040, false);
         }
-        graphics.drawString(font, Component.translatable("gui.productivecows.cooler.output"), 8, CoolerControllerMenu.OUTPUT_Y - 10, 0x404040, false);
+        graphics.drawString(font, Component.translatable("gui.productivecows.cooler.output"), 8, CoolerControllerMenu.OUTPUT_Y - 11, 0x404040, false);
     }
 
     private void renderGaugeTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -105,6 +116,22 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
                 lines.add(Component.translatable("gui.productivecows.cooler.fluid_empty").withStyle(ChatFormatting.GRAY));
             }
             lines.add(Component.translatable("gui.productivecows.cooler.shared", totalFluid(), capacity).withStyle(ChatFormatting.DARK_GRAY));
+            graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+            return;
+        }
+        if (isHovering(PROGRESS_X, PROGRESS_Y - 2, PROGRESS_W, PROGRESS_H + 4, mouseX, mouseY)) {
+            List<Component> lines = new ArrayList<>();
+            int stamps = menu.getActiveStamps();
+            if (stamps == 0) {
+                lines.add(Component.translatable("gui.productivecows.cooler.idle").withStyle(ChatFormatting.GRAY));
+            } else {
+                int cost = stamps * Math.max(0, com.productivecows.Config.coolerEnergyPerStamp);
+                lines.add(Component.translatable("tooltip.productivecows.jade.progress", menu.getProgress() * 100 / Math.max(1, menu.getCycleTicks()))
+                        .withStyle(ChatFormatting.GREEN));
+                lines.add(Component.translatable("gui.productivecows.cooler.cycle", menu.getCycleIngots(), stamps).withStyle(ChatFormatting.GRAY));
+                lines.add(Component.translatable(menu.getEnergy() < cost ? "gui.productivecows.cooler.no_power" : "gui.productivecows.consuming", cost)
+                        .withStyle(menu.getEnergy() < cost ? ChatFormatting.RED : ChatFormatting.YELLOW));
+            }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             return;
         }
