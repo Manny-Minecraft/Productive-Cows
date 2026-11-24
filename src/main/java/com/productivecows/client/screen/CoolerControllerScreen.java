@@ -126,19 +126,6 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
                 lines.add(Component.translatable("gui.productivecows.cooler.tank_free").withStyle(ChatFormatting.GRAY));
             }
             lines.add(Component.translatable("gui.productivecows.cooler.shared", totalFluid(), menu.getCapacity()).withStyle(ChatFormatting.DARK_GRAY));
-        } else if (isHovering(PROGRESS_X, PROGRESS_Y - 4, PROGRESS_W, PROGRESS_H + 8, mouseX, mouseY)) {
-            int stamps = menu.getActiveStamps();
-            if (stamps == 0) {
-                lines.add(Component.translatable("gui.productivecows.cooler.idle").withStyle(ChatFormatting.GRAY));
-            } else {
-                int cost = stamps * Math.max(0, Config.coolerEnergyPerStamp);
-                lines.add(Component.translatable("tooltip.productivecows.jade.progress", menu.getProgress() * 100 / Math.max(1, menu.getCycleTicks()))
-                        .withStyle(ChatFormatting.GREEN));
-                lines.add(Component.translatable("gui.productivecows.cooler.cycle", menu.getCycleIngots(), stamps).withStyle(ChatFormatting.GRAY));
-                boolean noPower = menu.getEnergy() < cost;
-                lines.add(Component.translatable(noPower ? "gui.productivecows.cooler.no_power" : "gui.productivecows.consuming", cost)
-                        .withStyle(noPower ? ChatFormatting.RED : ChatFormatting.YELLOW));
-            }
         } else if (isHovering(ENERGY_X, GAUGE_Y, ENERGY_W, GAUGE_H, mouseX, mouseY)) {
             lines.add(Component.translatable("gui.productivecows.energy").withStyle(ChatFormatting.RED));
             lines.add(Component.literal(menu.getEnergy() + " / " + menu.getMaxEnergy() + " RF").withStyle(ChatFormatting.GRAY));
@@ -152,6 +139,21 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
                     .withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable("gui.productivecows.cooler.info_energy", stamps * Math.max(0, Config.coolerEnergyPerStamp))
                     .withStyle(ChatFormatting.YELLOW));
+            // The current cycle: the progress bar itself only shows JEI's "show recipes" tooltip
+            int busy = menu.getActiveStamps();
+            if (busy == 0) {
+                lines.add(Component.translatable("gui.productivecows.cooler.idle").withStyle(ChatFormatting.DARK_GRAY));
+            } else {
+                int cost = busy * Math.max(0, Config.coolerEnergyPerStamp);
+                boolean noPower = menu.getEnergy() < cost;
+                lines.add(Component.translatable("gui.productivecows.cooler.cycle", menu.getCycleIngots(), busy)
+                        .append(" · ")
+                        .append(Component.translatable("tooltip.productivecows.jade.progress", menu.getProgress() * 100 / Math.max(1, menu.getCycleTicks())))
+                        .withStyle(ChatFormatting.GREEN));
+                if (noPower) {
+                    lines.add(Component.translatable("gui.productivecows.cooler.no_power", cost).withStyle(ChatFormatting.RED));
+                }
+            }
         }
         if (!lines.isEmpty()) {
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
