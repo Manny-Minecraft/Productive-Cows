@@ -111,7 +111,8 @@ public class MaterialCowsJEIPlugin implements IModPlugin {
         // How to build the Cooler multiblock, on each of its blocks
         for (var block : List.of(ProductiveCows.COOLER_CONTROLLER_ITEM, ProductiveCows.COOLER_BLOCK_ITEM, ProductiveCows.COOLER_TANK_ITEM,
                 ProductiveCows.COOLER_PORT_ITEM, ProductiveCows.COOLER_STAMP_ITEM)) {
-            registration.addItemStackInfo(new ItemStack(block.get()), net.minecraft.network.chat.Component.translatable("jei.productivecows.cooler_info"));
+            registration.addItemStackInfo(new ItemStack(block.get()),
+                    net.minecraft.network.chat.Component.translatable("jei.productivecows.cooler_info", Math.max(3, com.productivecows.Config.coolerMaxHeight)));
         }
     }
 

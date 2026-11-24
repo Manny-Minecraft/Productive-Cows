@@ -351,7 +351,7 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
     /** Checks the tower now and updates the formed blocks; returns the outcome. */
     public CoolerStructure.Result recheck() {
         results.clear();
-        CoolerStructure.Result result = CoolerStructure.check(worldPosition, facing(),
+        CoolerStructure.Result result = CoolerStructure.check(worldPosition, facing(), maxHeight(),
                 pos -> CoolerPartBlock.partOf(level.getBlockState(pos)));
         apply(result);
         return result;
@@ -408,6 +408,10 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
         if (level.getBlockEntity(pos) instanceof CoolerPortBlockEntity port) {
             port.bind(controller);
         }
+    }
+
+    private static int maxHeight() {
+        return Math.max(CoolerStructure.MIN_HEIGHT, Config.coolerMaxHeight);
     }
 
     private net.minecraft.core.Direction facing() {
@@ -596,10 +600,10 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
         return switch (result.problem()) {
             case WRONG_BLOCK -> Component.translatable(key + "wrong_block", at.getX(), at.getY(), at.getZ(), partNames(result.expected()));
             case EXTRA_CONTROLLER -> Component.translatable(key + "extra_controller", at.getX(), at.getY(), at.getZ());
-            case TOO_TALL -> Component.translatable(key + "too_tall", result.count(), CoolerStructure.MAX_HEIGHT);
+            case TOO_TALL -> Component.translatable(key + "too_tall", result.count(), maxHeight());
             case TOO_MANY_TANKS -> Component.translatable(key + "too_many_tanks", result.count(), CoolerStructure.MAX_TANKS);
-            case NO_BOTTOM -> Component.translatable(key + "no_bottom", CoolerStructure.MAX_HEIGHT);
-            case NO_TOP -> Component.translatable(key + "no_top", CoolerStructure.MAX_HEIGHT);
+            case NO_BOTTOM -> Component.translatable(key + "no_bottom", maxHeight());
+            case NO_TOP -> Component.translatable(key + "no_top", maxHeight());
             case CONTROLLER_FACING -> Component.translatable(key + "controller_facing");
             case NO_TANK -> Component.translatable(key + "no_tank");
             case NO_PORT -> Component.translatable(key + "no_port");

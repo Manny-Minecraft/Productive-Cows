@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * Shape check of the Cooler multiblock: a 3x3 tower, 3 to 10 blocks tall.
+ * Shape check of the Cooler multiblock: a 3x3 tower, 3 blocks to {@code coolerMaxHeight} tall (10 by default).
  * <ul>
  *   <li>Bottom and top layers: corners are Casing, edges Casing, Port or Controller, the centre Casing or Port.</li>
  *   <li>Inner layers: corners are Casing, edges Casing, Tank, Port or Controller, the centre a Stamp or air.</li>
@@ -21,7 +21,7 @@ import java.util.function.Function;
  */
 public final class CoolerStructure {
     public static final int MIN_HEIGHT = 3;
-    public static final int MAX_HEIGHT = 10;
+    public static final int DEFAULT_MAX_HEIGHT = 10;
     public static final int MAX_TANKS = 8;
     /** Ingots a single Stamp cools at the same time. */
     public static final int INGOTS_PER_STAMP = 2;
@@ -68,9 +68,9 @@ public final class CoolerStructure {
 
     /**
      * Checks the tower around a Controller whose screen faces {@code facing} (outwards).
-     * {@code partAt} reads the world; it is only called on the at most 3x3x10 positions of the tower.
+     * {@code partAt} reads the world; it is only called on the at most 3x3xmaxHeight positions of the tower.
      */
-    public static Result check(BlockPos controller, Direction facing, Function<BlockPos, CoolerPart> partAt) {
+    public static Result check(BlockPos controller, Direction facing, int maxHeight, Function<BlockPos, CoolerPart> partAt) {
         // The centre column is right behind the Controller's screen, and the opposite wall right behind the centre:
         // if that wall isn't there, the Controller is turned sideways (or the wall is missing)
         BlockPos centre = controller.relative(facing.getOpposite());
@@ -83,26 +83,26 @@ public final class CoolerStructure {
         int bottom;
         int top;
         if (here.isInterior()) {
-            bottom = findCap(centre, -1, partAt);
-            top = findCap(centre, 1, partAt);
+            bottom = findCap(centre, -1, partAt, maxHeight);
+            top = findCap(centre, 1, partAt, maxHeight);
         } else {
             // The Controller is on the bottom or the top layer. Air above a top layer also looks like an inner
             // layer, so try the Controller's layer as the bottom first and as the top if no top is found
             bottom = centre.getY();
-            top = findCap(centre, 1, partAt);
+            top = findCap(centre, 1, partAt, maxHeight);
             if (top == Integer.MIN_VALUE) {
                 top = centre.getY();
-                bottom = findCap(centre, -1, partAt);
+                bottom = findCap(centre, -1, partAt, maxHeight);
             }
         }
         if (bottom == Integer.MIN_VALUE) {
-            return Result.fail(Problem.NO_BOTTOM, null, CAP_CENTRE, MAX_HEIGHT);
+            return Result.fail(Problem.NO_BOTTOM, null, CAP_CENTRE, maxHeight);
         }
         if (top == Integer.MIN_VALUE) {
-            return Result.fail(Problem.NO_TOP, null, CAP_CENTRE, MAX_HEIGHT);
+            return Result.fail(Problem.NO_TOP, null, CAP_CENTRE, maxHeight);
         }
         int height = top - bottom + 1;
-        if (height > MAX_HEIGHT) {
+        if (height > maxHeight) {
             return Result.fail(Problem.TOO_TALL, null, EnumSet.noneOf(CoolerPart.class), height);
         }
 
@@ -115,11 +115,7 @@ public final class CoolerStructure {
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     BlockPos pos = new BlockPos(centre.getX() + dx, y, centre.getZ() + dz);
-                    boolean corner = dx != 0 && dz != 0;
-                    boolean middle = dx == 0 && dz == 0;
-                    Set<CoolerPart> allowed = cap
-                            ? (corner ? CAP_CORNER : middle ? CAP_CENTRE : CAP_EDGE)
-                            : (corner ? INNER_CORNER : middle ? INNER_CENTRE : INNER_EDGE);
+                    Set<CoolerPart> allowed = allowed(cap, dx, dz);
                     CoolerPart part = partAt.apply(pos);
                     if (!allowed.contains(part)) {
                         return Result.fail(Problem.WRONG_BLOCK, pos, allowed, 0);
@@ -157,10 +153,93 @@ public final class CoolerStructure {
                 new BlockPos(centre.getX(), bottom, centre.getZ()), height, tanks, stamps, List.copyOf(parts), List.copyOf(ports));
     }
 
+    /** What may stand at an offset from the centre column, on a bottom/top layer ({@code cap}) or an inner one. */
+    public static Set<CoolerPart> allowed(boolean cap, int dx, int dz) {
+        boolean corner = dx != 0 && dz != 0;
+        boolean middle = dx == 0 && dz == 0;
+        return cap
+                ? (corner ? CAP_CORNER : middle ? CAP_CENTRE : CAP_EDGE)
+                : (corner ? INNER_CORNER : middle ? INNER_CENTRE : INNER_EDGE);
+    }
+
+    /** Bottom layer and height of a tower, for the build preview. */
+    public record Frame(int bottom, int height) {}
+
+    /**
+     * Guesses where the tower around a Controller stands, from what is already built: the caps found in the centre
+     * column if any, otherwise the smallest tower with the Controller on its middle layer.
+     */
+    public static Frame frame(BlockPos controller, Direction facing, int maxHeight, Function<BlockPos, CoolerPart> partAt) {
+        BlockPos centre = controller.relative(facing.getOpposite());
+        CoolerPart here = partAt.apply(centre);
+        int y = controller.getY();
+        if (here.isCap()) {
+            int top = findCap(centre, 1, partAt, maxHeight);
+            if (top != Integer.MIN_VALUE) {
+                return new Frame(y, top - y + 1);
+            }
+            int bottom = findCap(centre, -1, partAt, maxHeight);
+            if (bottom != Integer.MIN_VALUE) {
+                return new Frame(bottom, y - bottom + 1);
+            }
+            return new Frame(y, MIN_HEIGHT);
+        }
+        int bottom = findCap(centre, -1, partAt, maxHeight);
+        int top = findCap(centre, 1, partAt, maxHeight);
+        if (bottom != Integer.MIN_VALUE && top != Integer.MIN_VALUE && top - bottom + 1 <= maxHeight) {
+            return new Frame(bottom, top - bottom + 1);
+        }
+        if (bottom != Integer.MIN_VALUE) {
+            return new Frame(bottom, Math.min(maxHeight, Math.max(MIN_HEIGHT, y - bottom + 2)));
+        }
+        if (top != Integer.MIN_VALUE) {
+            int height = Math.min(maxHeight, Math.max(MIN_HEIGHT, top - y + 2));
+            return new Frame(top - height + 1, height);
+        }
+        return new Frame(y - 1, MIN_HEIGHT);
+    }
+
+    /**
+     * A complete, valid tower for a frame: Casing everywhere, the Controller where it is, Stamps in the centre of the
+     * inner layers, one Tank on the inner wall opposite the Controller and one Port in line with the Controller on
+     * the bottom layer (the top one if the Controller is on the bottom).
+     */
+    public static java.util.Map<BlockPos, CoolerPart> blueprint(BlockPos controller, Direction facing, Frame frame) {
+        BlockPos centre = controller.relative(facing.getOpposite());
+        int bottom = frame.bottom();
+        int top = bottom + frame.height() - 1;
+        BlockPos tank = new BlockPos(centre.getX(), bottom + 1, centre.getZ()).relative(facing.getOpposite());
+        int portY = controller.getY() == bottom ? top : bottom;
+        BlockPos port = new BlockPos(controller.getX(), portY, controller.getZ());
+        java.util.Map<BlockPos, CoolerPart> plan = new java.util.LinkedHashMap<>();
+        for (int y = bottom; y <= top; y++) {
+            boolean cap = y == bottom || y == top;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    BlockPos pos = new BlockPos(centre.getX() + dx, y, centre.getZ() + dz);
+                    CoolerPart part;
+                    if (pos.equals(controller)) {
+                        part = CoolerPart.CONTROLLER;
+                    } else if (!cap && dx == 0 && dz == 0) {
+                        part = CoolerPart.STAMP;
+                    } else if (pos.equals(tank)) {
+                        part = CoolerPart.TANK;
+                    } else if (pos.equals(port)) {
+                        part = CoolerPart.PORT;
+                    } else {
+                        part = CoolerPart.CASING;
+                    }
+                    plan.put(pos, part);
+                }
+            }
+        }
+        return plan;
+    }
+
     /** Walks the centre column from {@code start} in {@code step} direction to the first cap; MIN_VALUE if none within reach. */
-    private static int findCap(BlockPos start, int step, Function<BlockPos, CoolerPart> partAt) {
+    private static int findCap(BlockPos start, int step, Function<BlockPos, CoolerPart> partAt, int maxHeight) {
         BlockPos pos = start;
-        for (int i = 0; i < MAX_HEIGHT; i++) {
+        for (int i = 0; i < maxHeight; i++) {
             pos = pos.relative(step > 0 ? Direction.UP : Direction.DOWN);
             CoolerPart part = partAt.apply(pos);
             if (part.isCap()) {

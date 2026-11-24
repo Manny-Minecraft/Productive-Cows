@@ -336,6 +336,7 @@ public class ProductiveCows {
 
 if (net.neoforged.fml.loading.FMLEnvironment.dist == Dist.CLIENT) {
             NeoForge.EVENT_BUS.addListener(com.productivecows.client.ClientModBusEvents::onLoggingOut);
+            NeoForge.EVENT_BUS.addListener(com.productivecows.client.CoolerPreview::onRenderLevel);
         }
 
         // Balance values live in the server config (config/productivecows-server.toml on NeoForge 21.1),

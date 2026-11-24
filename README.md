@@ -62,7 +62,7 @@ Invalid definitions (unknown fluid or cooling item, malformed tag, `breed_chance
 
 ## Cooler Multiblock (End Game)
 
-A 3x3 tower, from 3 to 10 blocks tall, that cools many fluids at once:
+A 3x3 tower, from 3 to 10 blocks tall (`coolerMaxHeight`, up to 64), that cools many fluids at once. Sneak + right-click the Controller to show a hologram of the blocks still missing.
 
 - **Cooler Casing**: the frame. All corners are Casing, as are the bottom and top layers (except for Ports or the Controller).
 - **Cooler Controller**: one per tower, with its screen facing out. Right-click opens the GUI; sneak + right-click tells you what is wrong with an unfinished tower. Right-click it with a bucket to pour the fluid in.

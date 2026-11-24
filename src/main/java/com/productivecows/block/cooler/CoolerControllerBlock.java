@@ -84,6 +84,10 @@ public class CoolerControllerBlock extends CoolerPartBlock implements EntityBloc
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (level.isClientSide && player.isShiftKeyDown()) {
+            // Sneak-click also switches this player's build preview of the tower (client side only)
+            com.productivecows.client.CoolerPreview.toggle(pos);
+        }
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof CoolerControllerBlockEntity controller) {
             // A formed tower opens its GUI; sneaking, or an incomplete tower, reports the tower's state instead
             var result = controller.recheck();
