@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "formed=false": {
+      "model": "productivecows:block/cooler_port"
+    },
+    "formed=true": {
       "model": "productivecows:block/cooler_port"
     }
   }

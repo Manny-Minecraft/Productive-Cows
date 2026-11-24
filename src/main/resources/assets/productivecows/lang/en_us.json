@@ -155,5 +155,17 @@
   "block.productivecows.cooler_block": "Cooler Casing",
   "block.productivecows.cooler_tank": "Cooler Tank",
   "block.productivecows.cooler_port": "Cooler Port",
-  "block.productivecows.cooler_stamp": "Cooler Stamp"
+  "block.productivecows.cooler_stamp": "Cooler Stamp",
+  "message.productivecows.cooler.formed": "Cooler formed: 3×%s×3, %s Stamps (%s ingots at a time), %s Tanks (%s fluids, %s mB)",
+  "message.productivecows.cooler.wrong_block": "Wrong block at %s %s %s: it must be %s",
+  "message.productivecows.cooler.extra_controller": "A tower can have only one Controller (another one at %s %s %s)",
+  "message.productivecows.cooler.too_tall": "The tower is %s blocks tall: the maximum is %s",
+  "message.productivecows.cooler.too_many_tanks": "Too many Tanks: %s, the maximum is %s",
+  "message.productivecows.cooler.no_bottom": "No bottom found: the centre column must end with a Casing or a Port within %s blocks",
+  "message.productivecows.cooler.no_top": "No top found: the centre column must end with a Casing or a Port within %s blocks",
+  "message.productivecows.cooler.controller_facing": "The Controller's screen must face out of the tower, with the opposite wall behind the centre",
+  "message.productivecows.cooler.no_tank": "The tower needs at least one Cooler Tank",
+  "message.productivecows.cooler.no_port": "The tower needs at least one Cooler Port",
+  "message.productivecows.cooler.no_stamp": "The tower needs at least one Cooler Stamp in the centre column",
+  "message.productivecows.cooler.air": "air"
 }

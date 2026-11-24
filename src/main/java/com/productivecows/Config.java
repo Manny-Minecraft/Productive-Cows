@@ -33,6 +33,11 @@ public class Config {
             .comment("Base fluid amount (mB) consumed per operation in the Advanced Cooler (without upgrades).")
             .defineInRange("advancedCoolerFluidCost", 1000, 1, 8000);
 
+    // Cooler multiblock
+    private static final ModConfigSpec.IntValue COOLER_TANK_CAPACITY = BUILDER
+            .comment("Fluid (mB) each Cooler Tank adds to the multiblock's shared storage.")
+            .defineInRange("coolerTankCapacity", 16000, 1000, 1000000);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int breedingCooldownTicks;
@@ -43,6 +48,8 @@ public class Config {
     public static int advancedCoolerEnergyCost;
     public static int advancedCoolerCookTime;
     public static int advancedCoolerFluidCost;
+
+    public static int coolerTankCapacity;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -56,5 +63,7 @@ public class Config {
         advancedCoolerEnergyCost = ADVANCED_COOLER_ENERGY_COST.get();
         advancedCoolerCookTime = ADVANCED_COOLER_COOK_TIME.get();
         advancedCoolerFluidCost = ADVANCED_COOLER_FLUID_COST.get();
+
+        coolerTankCapacity = COOLER_TANK_CAPACITY.get();
     }
 }

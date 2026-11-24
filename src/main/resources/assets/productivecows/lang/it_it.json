@@ -155,5 +155,17 @@
   "block.productivecows.cooler_block": "Involucro del Raffreddatore",
   "block.productivecows.cooler_tank": "Serbatoio del Raffreddatore",
   "block.productivecows.cooler_port": "Porta del Raffreddatore",
-  "block.productivecows.cooler_stamp": "Stampo del Raffreddatore"
+  "block.productivecows.cooler_stamp": "Stampo del Raffreddatore",
+  "message.productivecows.cooler.formed": "Raffreddatore formato: 3×%s×3, %s Stampi (%s lingotti alla volta), %s Serbatoi (%s fluidi, %s mB)",
+  "message.productivecows.cooler.wrong_block": "Blocco sbagliato in %s %s %s: deve essere %s",
+  "message.productivecows.cooler.extra_controller": "Una torre può avere un solo Controller (ce n'è un altro in %s %s %s)",
+  "message.productivecows.cooler.too_tall": "La torre è alta %s blocchi: il massimo è %s",
+  "message.productivecows.cooler.too_many_tanks": "Troppi Serbatoi: %s, il massimo è %s",
+  "message.productivecows.cooler.no_bottom": "Base non trovata: la colonna centrale deve chiudersi con un Involucro o una Porta entro %s blocchi",
+  "message.productivecows.cooler.no_top": "Cima non trovata: la colonna centrale deve chiudersi con un Involucro o una Porta entro %s blocchi",
+  "message.productivecows.cooler.controller_facing": "Lo schermo del Controller deve guardare fuori dalla torre, con la parete opposta dietro il centro",
+  "message.productivecows.cooler.no_tank": "La torre ha bisogno di almeno un Serbatoio",
+  "message.productivecows.cooler.no_port": "La torre ha bisogno di almeno una Porta",
+  "message.productivecows.cooler.no_stamp": "La torre ha bisogno di almeno uno Stampo nella colonna centrale",
+  "message.productivecows.cooler.air": "aria"
 }

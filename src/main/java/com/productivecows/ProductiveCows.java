@@ -92,18 +92,22 @@ public class ProductiveCows {
             () -> new com.productivecows.block.cooler.CoolerControllerBlock(coolerPartProperties()));
     public static final DeferredItem<BlockItem> COOLER_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem("cooler_controller", COOLER_CONTROLLER);
 
-    public static final DeferredBlock<Block> COOLER_BLOCK = BLOCKS.register("cooler_block", () -> new Block(coolerPartProperties()));
+    public static final DeferredBlock<Block> COOLER_BLOCK = BLOCKS.register("cooler_block",
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.CASING, coolerPartProperties()));
     public static final DeferredItem<BlockItem> COOLER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cooler_block", COOLER_BLOCK);
 
     // Glass window: it must not hide the faces of its neighbours, like vanilla glass
     public static final DeferredBlock<Block> COOLER_TANK = BLOCKS.register("cooler_tank",
-            () -> new Block(coolerPartProperties().noOcclusion().isViewBlocking((state, level, pos) -> false)));
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.TANK,
+                    coolerPartProperties().noOcclusion().isViewBlocking((state, level, pos) -> false)));
     public static final DeferredItem<BlockItem> COOLER_TANK_ITEM = ITEMS.registerSimpleBlockItem("cooler_tank", COOLER_TANK);
 
-    public static final DeferredBlock<Block> COOLER_PORT = BLOCKS.register("cooler_port", () -> new Block(coolerPartProperties()));
+    public static final DeferredBlock<Block> COOLER_PORT = BLOCKS.register("cooler_port",
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.PORT, coolerPartProperties()));
     public static final DeferredItem<BlockItem> COOLER_PORT_ITEM = ITEMS.registerSimpleBlockItem("cooler_port", COOLER_PORT);
 
-    public static final DeferredBlock<Block> COOLER_STAMP = BLOCKS.register("cooler_stamp", () -> new Block(coolerPartProperties()));
+    public static final DeferredBlock<Block> COOLER_STAMP = BLOCKS.register("cooler_stamp",
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.STAMP, coolerPartProperties()));
     public static final DeferredItem<BlockItem> COOLER_STAMP_ITEM = ITEMS.registerSimpleBlockItem("cooler_stamp", COOLER_STAMP);
 
     private static BlockBehaviour.Properties coolerPartProperties() {
@@ -161,6 +165,10 @@ public class ProductiveCows {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CowCageBlockEntity>> COW_CAGE_BE = BLOCK_ENTITY_TYPES.register("cow_cage",
             () -> BlockEntityType.Builder.of(CowCageBlockEntity::new, COW_CAGE.get()).build(null)
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.productivecows.block.entity.CoolerControllerBlockEntity>> COOLER_CONTROLLER_BE = BLOCK_ENTITY_TYPES.register("cooler_controller",
+            () -> BlockEntityType.Builder.of(com.productivecows.block.entity.CoolerControllerBlockEntity::new, COOLER_CONTROLLER.get()).build(null)
     );
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiquidCoolerBlockEntity>> LIQUID_COOLER_BE = BLOCK_ENTITY_TYPES.register("liquid_cooler",
