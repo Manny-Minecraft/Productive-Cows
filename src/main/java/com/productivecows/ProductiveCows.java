@@ -95,7 +95,9 @@ public class ProductiveCows {
     public static final DeferredBlock<Block> COOLER_BLOCK = BLOCKS.register("cooler_block", () -> new Block(coolerPartProperties()));
     public static final DeferredItem<BlockItem> COOLER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cooler_block", COOLER_BLOCK);
 
-    public static final DeferredBlock<Block> COOLER_TANK = BLOCKS.register("cooler_tank", () -> new Block(coolerPartProperties()));
+    // Glass window: it must not hide the faces of its neighbours, like vanilla glass
+    public static final DeferredBlock<Block> COOLER_TANK = BLOCKS.register("cooler_tank",
+            () -> new Block(coolerPartProperties().noOcclusion().isViewBlocking((state, level, pos) -> false)));
     public static final DeferredItem<BlockItem> COOLER_TANK_ITEM = ITEMS.registerSimpleBlockItem("cooler_tank", COOLER_TANK);
 
     public static final DeferredBlock<Block> COOLER_PORT = BLOCKS.register("cooler_port", () -> new Block(coolerPartProperties()));
