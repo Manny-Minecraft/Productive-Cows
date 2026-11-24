@@ -168,9 +168,7 @@
   "message.productivecows.cooler.no_port": "La torre ha bisogno di almeno una Porta",
   "message.productivecows.cooler.no_stamp": "La torre ha bisogno di almeno uno Stampo nella colonna centrale",
   "message.productivecows.cooler.air": "aria",
-  "container.productivecows.cooler_controller": "Controller del Raffreddatore",
-  "gui.productivecows.cooler.size": "3×%s×3 · %s Stampi",
-  "gui.productivecows.cooler.output": "Uscita",
+  "container.productivecows.cooler_controller": "Torre di Raffreddamento",
   "gui.productivecows.cooler.shared": "Condivisi: %s / %s mB",
   "message.productivecows.cooler.port_input": "Porta del Raffreddatore: ingresso (fluidi ed energia)",
   "message.productivecows.cooler.port_output": "Porta del Raffreddatore: uscita (oggetti)",
@@ -186,5 +184,10 @@
   "config.jade.plugin_productivecows.cooler_tower": "Productive Cows: Torre di Raffreddamento",
   "jei.productivecows.cooler_info": "Raffreddatore multiblocco: una torre 3x3 alta da 3 a 10 blocchi. Base e tetto sono pieni; i piani interni sono un anello con uno Stampo (o aria) al centro. Gli angoli sono Involucri. Servono un Controller (schermo verso l'esterno), almeno una Porta e un Serbatoio (solo nei piani interni, al massimo 8). Ogni Stampo raffredda 2 lingotti alla volta; ogni Serbatoio aggiunge spazio all'unico serbatoio della torre, che tiene qualsiasi mix di fluidi. Clic destro su una Porta per passare tra ingresso e uscita, o sul Controller con un secchio per versarlo.",
   "gui.productivecows.cooler.tank_free": "Spazio libero",
-  "block.productivecows.creative_energy_source": "Sorgente di Energia Creativa"
+  "block.productivecows.creative_energy_source": "Sorgente di Energia Creativa",
+  "gui.productivecows.cooler.info_size": "Torre 3×%s×3",
+  "gui.productivecows.cooler.info_stamps": "%s Stampi · %s lingotti per ciclo",
+  "gui.productivecows.cooler.info_tanks": "%s Serbatoi · %s mB",
+  "gui.productivecows.cooler.info_cycle": "Un ciclo ogni %s s",
+  "gui.productivecows.cooler.info_energy": "Fino a %s RF/t mentre raffredda"
 }

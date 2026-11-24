@@ -35,9 +35,10 @@ public class CoolerControllerMenu extends AbstractContainerMenu {
     /** Fluid layers the GUI can show: as many as the tank can hold. */
     public static final int FLUIDS_SHOWN = CoolerControllerBlockEntity.MAX_FLUIDS;
 
-    public static final int OUTPUT_X = 8;
-    public static final int OUTPUT_Y = 78;
-    public static final int INVENTORY_Y = 110;
+    /** Top-left slot of the 3x3 output grid. */
+    public static final int OUTPUT_X = 114;
+    public static final int OUTPUT_Y = 16;
+    public static final int INVENTORY_Y = 84;
 
     private final BlockEntity blockEntity;
     private final ContainerData data;
@@ -56,7 +57,7 @@ public class CoolerControllerMenu extends AbstractContainerMenu {
         ItemStackHandler output = be instanceof CoolerControllerBlockEntity controller
                 ? controller.getOutputInventory() : new ItemStackHandler(CoolerControllerBlockEntity.OUTPUT_SLOTS);
         for (int i = 0; i < CoolerControllerBlockEntity.OUTPUT_SLOTS; i++) {
-            addSlot(new SlotItemHandler(output, i, OUTPUT_X + i * 18, OUTPUT_Y) {
+            addSlot(new SlotItemHandler(output, i, OUTPUT_X + (i % 3) * 18, OUTPUT_Y + (i / 3) * 18) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return false;
