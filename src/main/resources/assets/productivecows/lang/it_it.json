@@ -185,5 +185,6 @@
   "tooltip.productivecows.jade.cooler.port_output": "Modalità: uscita",
   "config.jade.plugin_productivecows.cooler_tower": "Productive Cows: Torre di Raffreddamento",
   "jei.productivecows.cooler_info": "Raffreddatore multiblocco: una torre 3x3 alta da 3 a 10 blocchi. Base e tetto sono pieni; i piani interni sono un anello con uno Stampo (o aria) al centro. Gli angoli sono Involucri. Servono un Controller (schermo verso l'esterno), almeno una Porta e un Serbatoio (solo nei piani interni, al massimo 8). Ogni Stampo raffredda 2 lingotti alla volta; ogni Serbatoio aggiunge spazio all'unico serbatoio della torre, che tiene qualsiasi mix di fluidi. Clic destro su una Porta per passare tra ingresso e uscita, o sul Controller con un secchio per versarlo.",
-  "gui.productivecows.cooler.tank_free": "Spazio libero"
+  "gui.productivecows.cooler.tank_free": "Spazio libero",
+  "block.productivecows.creative_energy_source": "Sorgente di Energia Creativa"
 }

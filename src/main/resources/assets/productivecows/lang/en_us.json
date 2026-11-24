@@ -185,5 +185,6 @@
   "tooltip.productivecows.jade.cooler.port_output": "Mode: output",
   "config.jade.plugin_productivecows.cooler_tower": "Productive Cows: Cooler Tower",
   "jei.productivecows.cooler_info": "Cooler multiblock: a 3x3 tower, 3 to 10 blocks tall. Bottom and top layers are full; the inner layers are a ring with a Cooler Stamp (or air) in the centre. Corners are Cooler Casing. You need one Cooler Controller (screen facing out), at least one Cooler Port and one Cooler Tank (inner layers only, at most 8). Each Stamp cools 2 ingots at a time; each Tank adds space to the tower's single tank, which holds any mix of fluids. Right-click a Port to switch input and output, or the Controller with a bucket to pour it in.",
-  "gui.productivecows.cooler.tank_free": "Free space"
+  "gui.productivecows.cooler.tank_free": "Free space",
+  "block.productivecows.creative_energy_source": "Creative Energy Source"
 }
