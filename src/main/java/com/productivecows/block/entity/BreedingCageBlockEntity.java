@@ -100,6 +100,7 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
 
         boolean hasRecipe = hasRecipe(gameTime);
         if (hasRecipe) {
+            this.maxProgress = breedingTicks();
             this.progress++;
             setChanged(level, pos, state);
             if (this.progress >= this.maxProgress) {
@@ -139,12 +140,23 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
             return false;
         }
 
-        if (def1.equals(def2)) {
-            return canInsertIntoOutput(createCowItem(def1));
+        // Every calf has its own stats, so calves never stack: the output must be empty
+        if (!itemHandler.getStackInSlot(3).isEmpty()) {
+            return false;
         }
+        return def1.equals(def2) || findMutation(def1, def2) != null;
+    }
 
-        // Different parents: the result can be either parent or the mutation, so the output must be empty
-        return findMutation(def1, def2) != null && itemHandler.getStackInSlot(3).isEmpty();
+    /** Breeding takes 10 seconds, shortened by the parents' average Fertility. */
+    private int breedingTicks() {
+        double speed = (com.productivecows.genetics.CowStatsNbt.fertilityMultiplier(com.productivecows.genetics.CowStatsNbt.of(itemHandler.getStackInSlot(0)))
+                + com.productivecows.genetics.CowStatsNbt.fertilityMultiplier(com.productivecows.genetics.CowStatsNbt.of(itemHandler.getStackInSlot(1)))) / 2;
+        return Math.max(20, (int) Math.round(200 / speed));
+    }
+
+    /** A parent's breeding cooldown, shortened by its own Fertility. */
+    private static long cooldownTicks(com.productivecows.genetics.CowStats stats) {
+        return Math.round(com.productivecows.Config.breedingCooldownTicks / com.productivecows.genetics.CowStatsNbt.fertilityMultiplier(stats));
     }
 
     private void craftItem(Level level) {
@@ -152,8 +164,15 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         ItemStack parent2Stack = itemHandler.getStackInSlot(1);
         ResourceLocation def1 = getCowDef(parent1Stack);
         ResourceLocation def2 = getCowDef(parent2Stack);
+        com.productivecows.genetics.CowStats stats1 = com.productivecows.genetics.CowStatsNbt.of(parent1Stack);
+        com.productivecows.genetics.CowStats stats2 = com.productivecows.genetics.CowStatsNbt.of(parent2Stack);
 
         ItemStack result = getBreedingResult(def1, def2, level.getRandom());
+        if (!result.isEmpty()) {
+            // The calf inherits from both parents, whatever species it turns out to be
+            result = com.productivecows.genetics.CowStatsNbt.with(result, com.productivecows.genetics.CowStats.breed(stats1, stats2, com.productivecows.genetics.CowStatsNbt.max(),
+                    com.productivecows.Config.cowStatGrowthChance, () -> level.getRandom().nextDouble()));
+        }
         if (result.isEmpty() || !canInsertIntoOutput(result)) {
             return; // Nothing consumed; hasRecipe guarantees this does not happen
         }
@@ -167,9 +186,8 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
             itemHandler.setStackInSlot(3, outputSlot.copyWithCount(outputSlot.getCount() + result.getCount()));
         }
 
-        long cooldownUntil = level.getGameTime() + com.productivecows.Config.breedingCooldownTicks;
-        applyBreedingCooldown(0, cooldownUntil);
-        applyBreedingCooldown(1, cooldownUntil);
+        applyBreedingCooldown(0, level.getGameTime() + cooldownTicks(stats1));
+        applyBreedingCooldown(1, level.getGameTime() + cooldownTicks(stats2));
 
         this.progress = 0;
     }

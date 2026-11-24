@@ -147,7 +147,7 @@
   "jei.productivecows.chance": "%s%%",
   "jei.productivecows.conversion": "Cow Conversion",
   "jei.productivecows.milking": "Milking",
-  "jei.productivecows.milking_cycle": "%s mB every %s s",
+  "jei.productivecows.milking_cycle": "%s mB every %s s (Yield and Metabolism 1)",
   "jei.productivecows.generator_fuel": "Generator Fuel",
   "jei.productivecows.fuel_energy": "%s RF/mB",
   "jei.productivecows.fuel_rate": "%s RF/t",
@@ -189,5 +189,8 @@
   "gui.productivecows.cooler.info_stamps": "%s Stamps · %s ingots per cycle",
   "gui.productivecows.cooler.info_tanks": "%s Tanks · %s mB",
   "gui.productivecows.cooler.info_cycle": "One cycle every %s s",
-  "gui.productivecows.cooler.info_energy": "Up to %s RF/t while cooling"
+  "gui.productivecows.cooler.info_energy": "Up to %s RF/t while cooling",
+  "tooltip.productivecows.cow.yield": "Yield: %s/%s",
+  "tooltip.productivecows.cow.metabolism": "Metabolism: %s/%s",
+  "tooltip.productivecows.cow.fertility": "Fertility: %s/%s"
 }

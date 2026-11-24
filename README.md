@@ -60,6 +60,18 @@ Invalid definitions (unknown fluid or cooling item, malformed tag, `breed_chance
 
 ---
 
+## Cow Stats
+
+Every material cow has three stats, from 1 to 10 (`cowStatMax`):
+
+- **Yield**: fluid per Cow Cage cycle, +50% per level (`cowYieldPerLevel`): 5.5x at 10.
+- **Metabolism**: speed of the Cow Cage cycle and of the bucket milking cooldown, +33% per level (`cowMetabolismPerLevel`): about 4x at 10.
+- **Fertility**: speed of breeding and of the parents' breeding cooldown in the Breeding Cage, +33% per level (`cowFertilityPerLevel`).
+
+New cows start at 1/1/1. A calf gets, for each stat, its parents' average rounded down, plus a chance of +1 that starts at 40% (`cowStatGrowthChance`) and shrinks as the stat grows; it never goes above the better parent + 1. Mutations inherit the same way. Going from two 1/1/1 cows to a 10/10/10 takes about 200 breedings. Stats show in the captured cow's tooltip and in Jade.
+
+---
+
 ## Cooler Multiblock (End Game)
 
 A 3x3 tower, from 3 to 10 blocks tall (`coolerMaxHeight`, up to 64), that cools many fluids at once. Sneak + right-click the Controller to show a hologram of the blocks still missing.

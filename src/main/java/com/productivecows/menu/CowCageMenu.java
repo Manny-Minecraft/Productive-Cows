@@ -21,13 +21,13 @@ public class CowCageMenu extends AbstractContainerMenu {
 
     // Client Constructor
     public CowCageMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
-        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(1));
+        this(windowId, inv, inv.player.level().getBlockEntity(buf.readBlockPos()), new SimpleContainerData(2));
     }
 
     // Common/Server Constructor
     public CowCageMenu(int windowId, Inventory inv, BlockEntity be, ContainerData data) {
         super(ProductiveCows.COW_CAGE_MENU.get(), windowId);
-        checkContainerDataCount(data, 1);
+        checkContainerDataCount(data, 2);
         this.blockEntity = be;
         this.data = data;
 
@@ -82,6 +82,11 @@ public class CowCageMenu extends AbstractContainerMenu {
 
     public BlockEntity getBlockEntity() {
         return blockEntity;
+    }
+
+    /** Length of the current cycle, shortened by the cow's Metabolism. */
+    public int getMilkingCycle() {
+        return Math.max(1, data.get(1));
     }
 
     public int getMilkingTimer() {

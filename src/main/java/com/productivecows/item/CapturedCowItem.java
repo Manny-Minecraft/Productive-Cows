@@ -154,6 +154,7 @@ public class CapturedCowItem extends Item {
                     if (tag.getInt(AGE) < 0) {
                         tooltip.add(Component.translatable("tooltip.productivecows.captured_cow.calf").withStyle(ChatFormatting.AQUA));
                     }
+                    tooltip.addAll(com.productivecows.genetics.CowStatsNbt.describe(com.productivecows.genetics.CowStatsNbt.read(tag)));
                     
                     int cooldown = 0;
                     if (tag.contains("MilkingCooldown")) {

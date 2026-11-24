@@ -52,6 +52,23 @@ public class Config {
             .comment("RF per tick each busy Stamp of the Cooler multiblock consumes.")
             .defineInRange("coolerEnergyPerStamp", 60, 0, Integer.MAX_VALUE);
 
+    // Cow stats (Yield, Metabolism, Fertility)
+    private static final ModConfigSpec.IntValue COW_STAT_MAX = BUILDER
+            .comment("Highest level a cow stat can reach.")
+            .defineInRange("cowStatMax", 10, 1, 100);
+    private static final ModConfigSpec.IntValue COW_STAT_GROWTH_CHANCE = BUILDER
+            .comment("Chance (%) that a calf's stat grows by 1 over its parents' average when that average is 1; it shrinks to 0 at the maximum.")
+            .defineInRange("cowStatGrowthChance", 40, 0, 100);
+    private static final ModConfigSpec.IntValue COW_YIELD_PER_LEVEL = BUILDER
+            .comment("Extra fluid (%) per Cow Cage cycle for every Yield level above 1.")
+            .defineInRange("cowYieldPerLevel", 50, 0, 1000);
+    private static final ModConfigSpec.IntValue COW_METABOLISM_PER_LEVEL = BUILDER
+            .comment("Extra speed (%) of the Cow Cage cycle and the bucket milking cooldown for every Metabolism level above 1.")
+            .defineInRange("cowMetabolismPerLevel", 33, 0, 1000);
+    private static final ModConfigSpec.IntValue COW_FERTILITY_PER_LEVEL = BUILDER
+            .comment("Extra speed (%) of breeding and of the breeding cooldown for every Fertility level above 1.")
+            .defineInRange("cowFertilityPerLevel", 33, 0, 1000);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int breedingCooldownTicks;
@@ -67,6 +84,12 @@ public class Config {
     public static int coolerEnergyCapacity;
     public static int coolerCycleTicks;
     public static int coolerMaxHeight = 10;
+
+    public static int cowStatMax = 10;
+    public static int cowStatGrowthChance = 40;
+    public static int cowYieldPerLevel = 50;
+    public static int cowMetabolismPerLevel = 33;
+    public static int cowFertilityPerLevel = 33;
     public static int coolerEnergyPerStamp;
 
     @SubscribeEvent
@@ -86,6 +109,11 @@ public class Config {
         coolerEnergyCapacity = COOLER_ENERGY_CAPACITY.get();
         coolerCycleTicks = COOLER_CYCLE_TICKS.get();
         coolerMaxHeight = COOLER_MAX_HEIGHT.get();
+        cowStatMax = COW_STAT_MAX.get();
+        cowStatGrowthChance = COW_STAT_GROWTH_CHANCE.get();
+        cowYieldPerLevel = COW_YIELD_PER_LEVEL.get();
+        cowMetabolismPerLevel = COW_METABOLISM_PER_LEVEL.get();
+        cowFertilityPerLevel = COW_FERTILITY_PER_LEVEL.get();
         coolerEnergyPerStamp = COOLER_ENERGY_PER_STAMP.get();
     }
 }

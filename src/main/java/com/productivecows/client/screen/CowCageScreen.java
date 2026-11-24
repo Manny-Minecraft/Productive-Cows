@@ -69,8 +69,9 @@ int fillHeight = Math.min(52, (amount * 52) / 8000);
         // Draw Milking Cooldown Indicator overlay on the egg slot
         if (menu.getBlockEntity() instanceof CowCageBlockEntity cage) {
             int timer = menu.getMilkingTimer();
-            if (timer > 0 && timer < 400) {
-                int progress = ((400 - timer) * 16) / 400; // 16 pixels max
+            int cycle = menu.getMilkingCycle();
+            if (timer > 0 && timer < cycle) {
+                int progress = ((cycle - timer) * 16) / cycle; // 16 pixels max
                 guiGraphics.fill(x + 129, y + 52, x + 145, y + 54, 0xFF373737);
                 guiGraphics.fill(x + 129, y + 52, x + 129 + progress, y + 54, 0xFF5DADE2);
             }

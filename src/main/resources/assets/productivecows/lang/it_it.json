@@ -147,7 +147,7 @@
   "jei.productivecows.chance": "%s%%",
   "jei.productivecows.conversion": "Conversione Mucca",
   "jei.productivecows.milking": "Mungitura",
-  "jei.productivecows.milking_cycle": "%s mB ogni %s s",
+  "jei.productivecows.milking_cycle": "%s mB ogni %s s (Resa e Metabolismo 1)",
   "jei.productivecows.generator_fuel": "Carburante Generatore",
   "jei.productivecows.fuel_energy": "%s RF/mB",
   "jei.productivecows.fuel_rate": "%s RF/t",
@@ -189,5 +189,8 @@
   "gui.productivecows.cooler.info_stamps": "%s Stampi · %s lingotti per ciclo",
   "gui.productivecows.cooler.info_tanks": "%s Serbatoi · %s mB",
   "gui.productivecows.cooler.info_cycle": "Un ciclo ogni %s s",
-  "gui.productivecows.cooler.info_energy": "Fino a %s RF/t mentre raffredda"
+  "gui.productivecows.cooler.info_energy": "Fino a %s RF/t mentre raffredda",
+  "tooltip.productivecows.cow.yield": "Resa: %s/%s",
+  "tooltip.productivecows.cow.metabolism": "Metabolismo: %s/%s",
+  "tooltip.productivecows.cow.fertility": "Fertilità: %s/%s"
 }
