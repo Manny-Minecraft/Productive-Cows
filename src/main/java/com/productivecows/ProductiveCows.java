@@ -103,7 +103,7 @@ public class ProductiveCows {
     public static final DeferredItem<BlockItem> COOLER_TANK_ITEM = ITEMS.registerSimpleBlockItem("cooler_tank", COOLER_TANK);
 
     public static final DeferredBlock<Block> COOLER_PORT = BLOCKS.register("cooler_port",
-            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.PORT, coolerPartProperties()));
+            () -> new com.productivecows.block.cooler.CoolerPortBlock(coolerPartProperties()));
     public static final DeferredItem<BlockItem> COOLER_PORT_ITEM = ITEMS.registerSimpleBlockItem("cooler_port", COOLER_PORT);
 
     public static final DeferredBlock<Block> COOLER_STAMP = BLOCKS.register("cooler_stamp",
@@ -171,6 +171,10 @@ public class ProductiveCows {
             () -> BlockEntityType.Builder.of(com.productivecows.block.entity.CoolerControllerBlockEntity::new, COOLER_CONTROLLER.get()).build(null)
     );
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.productivecows.block.entity.CoolerPortBlockEntity>> COOLER_PORT_BE = BLOCK_ENTITY_TYPES.register("cooler_port",
+            () -> BlockEntityType.Builder.of(com.productivecows.block.entity.CoolerPortBlockEntity::new, COOLER_PORT.get()).build(null)
+    );
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiquidCoolerBlockEntity>> LIQUID_COOLER_BE = BLOCK_ENTITY_TYPES.register("liquid_cooler",
             () -> BlockEntityType.Builder.of(LiquidCoolerBlockEntity::new, LIQUID_COOLER.get()).build(null)
     );
@@ -197,6 +201,10 @@ public class ProductiveCows {
 
     public static final DeferredHolder<MenuType<?>, MenuType<com.productivecows.menu.MilkGeneratorMenu>> MILK_GENERATOR_MENU = MENU_TYPES.register("milk_generator",
             () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(com.productivecows.menu.MilkGeneratorMenu::new)
+    );
+
+    public static final DeferredHolder<MenuType<?>, MenuType<com.productivecows.menu.CoolerControllerMenu>> COOLER_CONTROLLER_MENU = MENU_TYPES.register("cooler_controller",
+            () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(com.productivecows.menu.CoolerControllerMenu::new)
     );
 
     public static final DeferredHolder<MenuType<?>, MenuType<com.productivecows.menu.AdvancedCoolerMenu>> ADVANCED_COOLER_MENU = MENU_TYPES.register("advanced_cooler",

@@ -47,6 +47,7 @@ public class ClientModBusEvents {
         event.register(com.productivecows.ProductiveCows.BREEDING_CAGE_MENU.get(), com.productivecows.client.screen.BreedingCageScreen::new);
         event.register(com.productivecows.ProductiveCows.MILK_GENERATOR_MENU.get(), com.productivecows.client.screen.MilkGeneratorScreen::new);
         event.register(com.productivecows.ProductiveCows.ADVANCED_COOLER_MENU.get(), com.productivecows.client.screen.AdvancedCoolerScreen::new);
+        event.register(com.productivecows.ProductiveCows.COOLER_CONTROLLER_MENU.get(), com.productivecows.client.screen.CoolerControllerScreen::new);
     }
 
     @SubscribeEvent

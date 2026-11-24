@@ -71,7 +71,13 @@ public class CoolerControllerBlock extends CoolerPartBlock implements EntityBloc
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof CoolerControllerBlockEntity controller) {
-            player.displayClientMessage(controller.describe(controller.recheck()), true);
+            // A formed tower opens its GUI; sneaking, or an incomplete tower, reports the tower's state instead
+            var result = controller.recheck();
+            if (result.formed() && !player.isShiftKeyDown()) {
+                player.openMenu(controller, pos);
+            } else {
+                player.displayClientMessage(controller.describe(result), true);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

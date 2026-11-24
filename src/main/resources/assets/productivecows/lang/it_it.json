@@ -167,5 +167,13 @@
   "message.productivecows.cooler.no_tank": "La torre ha bisogno di almeno un Serbatoio",
   "message.productivecows.cooler.no_port": "La torre ha bisogno di almeno una Porta",
   "message.productivecows.cooler.no_stamp": "La torre ha bisogno di almeno uno Stampo nella colonna centrale",
-  "message.productivecows.cooler.air": "aria"
+  "message.productivecows.cooler.air": "aria",
+  "container.productivecows.cooler_controller": "Controller del Raffreddatore",
+  "gui.productivecows.cooler.size": "3×%s×3 · %s Stampi",
+  "gui.productivecows.cooler.output": "Uscita",
+  "gui.productivecows.cooler.fluid_empty": "Vuoto: c'è posto per un altro fluido",
+  "gui.productivecows.cooler.fluid_locked": "Aggiungi un Serbatoio per tenere un fluido in più",
+  "gui.productivecows.cooler.shared": "Condivisi: %s / %s mB",
+  "message.productivecows.cooler.port_input": "Porta del Raffreddatore: ingresso (fluidi ed energia)",
+  "message.productivecows.cooler.port_output": "Porta del Raffreddatore: uscita (oggetti)"
 }

@@ -38,6 +38,10 @@ public class Config {
             .comment("Fluid (mB) each Cooler Tank adds to the multiblock's shared storage.")
             .defineInRange("coolerTankCapacity", 16000, 1000, 1000000);
 
+    private static final ModConfigSpec.IntValue COOLER_ENERGY_CAPACITY = BUILDER
+            .comment("RF the Cooler multiblock's Controller can store.")
+            .defineInRange("coolerEnergyCapacity", 200000, 1000, Integer.MAX_VALUE);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int breedingCooldownTicks;
@@ -50,6 +54,7 @@ public class Config {
     public static int advancedCoolerFluidCost;
 
     public static int coolerTankCapacity;
+    public static int coolerEnergyCapacity;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -65,5 +70,6 @@ public class Config {
         advancedCoolerFluidCost = ADVANCED_COOLER_FLUID_COST.get();
 
         coolerTankCapacity = COOLER_TANK_CAPACITY.get();
+        coolerEnergyCapacity = COOLER_ENERGY_CAPACITY.get();
     }
 }

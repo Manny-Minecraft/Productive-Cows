@@ -167,5 +167,13 @@
   "message.productivecows.cooler.no_tank": "The tower needs at least one Cooler Tank",
   "message.productivecows.cooler.no_port": "The tower needs at least one Cooler Port",
   "message.productivecows.cooler.no_stamp": "The tower needs at least one Cooler Stamp in the centre column",
-  "message.productivecows.cooler.air": "air"
+  "message.productivecows.cooler.air": "air",
+  "container.productivecows.cooler_controller": "Cooler Controller",
+  "gui.productivecows.cooler.size": "3×%s×3 · %s Stamps",
+  "gui.productivecows.cooler.output": "Output",
+  "gui.productivecows.cooler.fluid_empty": "Empty: room for one more fluid",
+  "gui.productivecows.cooler.fluid_locked": "Add a Cooler Tank to store one more fluid",
+  "gui.productivecows.cooler.shared": "Shared: %s / %s mB",
+  "message.productivecows.cooler.port_input": "Cooler Port: input (fluids and energy)",
+  "message.productivecows.cooler.port_output": "Cooler Port: output (items)"
 }
