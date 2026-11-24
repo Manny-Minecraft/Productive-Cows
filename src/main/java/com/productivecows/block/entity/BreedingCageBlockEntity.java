@@ -177,7 +177,7 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
         if (!result.isEmpty()) {
             // The calf inherits from both parents, whatever species it turns out to be
             result = com.productivecows.genetics.CowStatsNbt.with(result, com.productivecows.genetics.CowStats.breed(stats1, stats2, com.productivecows.genetics.CowStatsNbt.max(),
-                    com.productivecows.Config.cowStatGrowthChance, () -> level.getRandom().nextDouble()));
+                    com.productivecows.Config.cowStatGrowthChance, com.productivecows.Config.cowStatMinGrowthChance, () -> level.getRandom().nextDouble()));
         }
         if (result.isEmpty() || !canInsertIntoOutput(result)) {
             return; // Nothing consumed; hasRecipe guarantees this does not happen

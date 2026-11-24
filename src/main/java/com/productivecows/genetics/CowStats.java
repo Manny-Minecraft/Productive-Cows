@@ -35,20 +35,24 @@ public record CowStats(int yield, int metabolism, int fertility) {
 
     /**
      * A calf's stats: for each stat, the parents' average rounded down, then a chance of +1 that shrinks as the stat
-     * grows ({@code growthChancePercent} at level 1, nothing at {@code max}); never more than the better parent + 1.
+     * grows, from {@code growthChancePercent} at level 1 to {@code minGrowthChancePercent} just below {@code max};
+     * never more than the better parent + 1, never above {@code max}.
      *
      * @param random returns a number in [0, 1), one call per stat
      */
-    public static CowStats breed(CowStats a, CowStats b, int max, int growthChancePercent, DoubleSupplier random) {
+    public static CowStats breed(CowStats a, CowStats b, int max, int growthChancePercent, int minGrowthChancePercent,
+                                 DoubleSupplier random) {
         return new CowStats(
-                child(a.yield, b.yield, max, growthChancePercent, random),
-                child(a.metabolism, b.metabolism, max, growthChancePercent, random),
-                child(a.fertility, b.fertility, max, growthChancePercent, random));
+                child(a.yield, b.yield, max, growthChancePercent, minGrowthChancePercent, random),
+                child(a.metabolism, b.metabolism, max, growthChancePercent, minGrowthChancePercent, random),
+                child(a.fertility, b.fertility, max, growthChancePercent, minGrowthChancePercent, random));
     }
 
-    static int child(int x, int y, int max, int growthChancePercent, DoubleSupplier random) {
+    static int child(int x, int y, int max, int growthChancePercent, int minGrowthChancePercent, DoubleSupplier random) {
         int value = (x + y) / 2;
-        double chance = max <= 1 ? 0 : growthChancePercent / 100.0 * (max - value) / (max - 1);
+        double high = growthChancePercent / 100.0;
+        double low = Math.min(high, minGrowthChancePercent / 100.0);
+        double chance = max <= 1 || value >= max ? 0 : low + (high - low) * (max - value) / (max - 1);
         if (random.getAsDouble() < chance) {
             value++;
         }

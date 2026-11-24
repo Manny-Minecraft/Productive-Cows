@@ -12,7 +12,7 @@ public class Config {
     // Breeding Settings
     private static final ModConfigSpec.IntValue BREEDING_COOLDOWN = BUILDER
             .comment("Cooldown applied to parent cows after a successful breeding in ticks (20 ticks = 1 second).")
-            .defineInRange("breedingCooldownTicks", 3000, 0, Integer.MAX_VALUE);
+            .defineInRange("breedingCooldownTicks", 900, 0, Integer.MAX_VALUE);
 
     // Basic Cooler Settings
     private static final ModConfigSpec.IntValue BASIC_COOLER_COOK_TIME = BUILDER
@@ -57,8 +57,11 @@ public class Config {
             .comment("Highest level a cow stat can reach.")
             .defineInRange("cowStatMax", 10, 1, 100);
     private static final ModConfigSpec.IntValue COW_STAT_GROWTH_CHANCE = BUILDER
-            .comment("Chance (%) that a calf's stat grows by 1 over its parents' average when that average is 1; it shrinks to 0 at the maximum.")
-            .defineInRange("cowStatGrowthChance", 40, 0, 100);
+            .comment("Chance (%) that a calf's stat grows by 1 over its parents' average when that average is 1.")
+            .defineInRange("cowStatGrowthChance", 80, 0, 100);
+    private static final ModConfigSpec.IntValue COW_STAT_MIN_GROWTH_CHANCE = BUILDER
+            .comment("Chance (%) of growing by 1 just below the maximum; between level 1 and there it goes down evenly.")
+            .defineInRange("cowStatMinGrowthChance", 40, 0, 100);
     private static final ModConfigSpec.IntValue COW_YIELD_PER_LEVEL = BUILDER
             .comment("Extra fluid (%) per Cow Cage cycle for every Yield level above 1.")
             .defineInRange("cowYieldPerLevel", 50, 0, 1000);
@@ -86,7 +89,8 @@ public class Config {
     public static int coolerMaxHeight = 10;
 
     public static int cowStatMax = 10;
-    public static int cowStatGrowthChance = 40;
+    public static int cowStatGrowthChance = 80;
+    public static int cowStatMinGrowthChance = 40;
     public static int cowYieldPerLevel = 50;
     public static int cowMetabolismPerLevel = 33;
     public static int cowFertilityPerLevel = 33;
@@ -111,6 +115,7 @@ public class Config {
         coolerMaxHeight = COOLER_MAX_HEIGHT.get();
         cowStatMax = COW_STAT_MAX.get();
         cowStatGrowthChance = COW_STAT_GROWTH_CHANCE.get();
+        cowStatMinGrowthChance = COW_STAT_MIN_GROWTH_CHANCE.get();
         cowYieldPerLevel = COW_YIELD_PER_LEVEL.get();
         cowMetabolismPerLevel = COW_METABOLISM_PER_LEVEL.get();
         cowFertilityPerLevel = COW_FERTILITY_PER_LEVEL.get();

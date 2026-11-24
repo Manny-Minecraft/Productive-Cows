@@ -68,7 +68,7 @@ Every material cow has three stats, from 1 to 10 (`cowStatMax`):
 - **Metabolism**: speed of the Cow Cage cycle and of the bucket milking cooldown, +33% per level (`cowMetabolismPerLevel`): about 4x at 10.
 - **Fertility**: speed of breeding and of the parents' breeding cooldown in the Breeding Cage, +33% per level (`cowFertilityPerLevel`).
 
-New cows start at 1/1/1. A calf gets, for each stat, its parents' average rounded down, plus a chance of +1 that starts at 40% (`cowStatGrowthChance`) and shrinks as the stat grows; it never goes above the better parent + 1. Mutations inherit the same way. Going from two 1/1/1 cows to a 10/10/10 takes about 200 breedings. Stats show in the captured cow's tooltip and in Jade.
+New cows start at 1/1/1. A calf gets, for each stat, its parents' average rounded down, plus a chance of +1 that goes from 80% at level 1 (`cowStatGrowthChance`) down to 40% just below the maximum (`cowStatMinGrowthChance`); it never goes above the better parent + 1. Mutations inherit the same way. Going from two 1/1/1 cows to a 10/10/10 takes about 40 breedings, around 15 minutes with one Breeding Cage (parents rest 45 s, `breedingCooldownTicks`, less with higher Fertility). Stats show in the captured cow's tooltip and in Jade.
 
 ---
 

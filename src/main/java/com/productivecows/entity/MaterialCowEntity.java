@@ -254,7 +254,7 @@ public class MaterialCowEntity extends Cow {
                 baby.setCowDefinitionId(babyId);
                 // Calves inherit their parents' stats, as in the Breeding Cage
                 baby.setStats(com.productivecows.genetics.CowStats.breed(this.stats, otherMC.stats, com.productivecows.genetics.CowStatsNbt.max(),
-                        com.productivecows.Config.cowStatGrowthChance, this.random::nextDouble));
+                        com.productivecows.Config.cowStatGrowthChance, com.productivecows.Config.cowStatMinGrowthChance, this.random::nextDouble));
             }
         }
         return baby;
