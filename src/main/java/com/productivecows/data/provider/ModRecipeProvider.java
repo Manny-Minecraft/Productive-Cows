@@ -75,6 +75,62 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_bucket", has(Items.BUCKET))
                 .save(output);
 
+        // Cooler multiblock. Casing (x4): polished deepslate and copper around iron
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.COOLER_BLOCK_ITEM.get(), 4)
+                .pattern("DCD")
+                .pattern("CIC")
+                .pattern("DCD")
+                .define('D', Items.POLISHED_DEEPSLATE)
+                .define('C', Tags.Items.INGOTS_COPPER)
+                .define('I', Tags.Items.INGOTS_IRON)
+                .unlockedBy("has_advanced_cooler", has(ProductiveCows.ADVANCED_COOLER_ITEM.get()))
+                .save(output);
+
+        // Cooler Tank: casing and glass around a bucket
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.COOLER_TANK_ITEM.get())
+                .pattern("CGC")
+                .pattern("GBG")
+                .pattern("CGC")
+                .define('C', ProductiveCows.COOLER_BLOCK_ITEM.get())
+                .define('G', Tags.Items.GLASS_BLOCKS_COLORLESS)
+                .define('B', Items.BUCKET)
+                .unlockedBy("has_cooler_block", has(ProductiveCows.COOLER_BLOCK_ITEM.get()))
+                .save(output);
+
+        // Cooler Port: casing with hoppers and redstone
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.COOLER_PORT_ITEM.get())
+                .pattern("CHC")
+                .pattern("RCR")
+                .pattern("CHC")
+                .define('C', ProductiveCows.COOLER_BLOCK_ITEM.get())
+                .define('H', Items.HOPPER)
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy("has_cooler_block", has(ProductiveCows.COOLER_BLOCK_ITEM.get()))
+                .save(output);
+
+        // Cooler Stamp: a Basic Cooler packed in ice and gold, so each stamp costs a mid-game machine
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.COOLER_STAMP_ITEM.get())
+                .pattern("PGP")
+                .pattern("GLG")
+                .pattern("PGP")
+                .define('P', Items.PACKED_ICE)
+                .define('G', Tags.Items.INGOTS_GOLD)
+                .define('L', ProductiveCows.LIQUID_COOLER_ITEM.get())
+                .unlockedBy("has_liquid_cooler", has(ProductiveCows.LIQUID_COOLER_ITEM.get()))
+                .save(output);
+
+        // Cooler Controller: an Advanced Cooler wired into the casing
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.COOLER_CONTROLLER_ITEM.get())
+                .pattern("CRC")
+                .pattern("DAD")
+                .pattern("CRC")
+                .define('C', ProductiveCows.COOLER_BLOCK_ITEM.get())
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('D', Tags.Items.GEMS_DIAMOND)
+                .define('A', ProductiveCows.ADVANCED_COOLER_ITEM.get())
+                .unlockedBy("has_advanced_cooler", has(ProductiveCows.ADVANCED_COOLER_ITEM.get()))
+                .save(output);
+
         // Base Upgrade (x3): iron and redstone
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ProductiveCows.BASE_UPGRADE.get(), 3)
                 .pattern(" I ")

@@ -150,5 +150,10 @@
   "jei.productivecows.milking_cycle": "%s mB ogni %s s",
   "jei.productivecows.generator_fuel": "Carburante Generatore",
   "jei.productivecows.fuel_energy": "%s RF/mB",
-  "jei.productivecows.fuel_rate": "%s RF/t"
+  "jei.productivecows.fuel_rate": "%s RF/t",
+  "block.productivecows.cooler_controller": "Controller del Raffreddatore",
+  "block.productivecows.cooler_block": "Involucro del Raffreddatore",
+  "block.productivecows.cooler_tank": "Serbatoio del Raffreddatore",
+  "block.productivecows.cooler_port": "Porta del Raffreddatore",
+  "block.productivecows.cooler_stamp": "Stampo del Raffreddatore"
 }

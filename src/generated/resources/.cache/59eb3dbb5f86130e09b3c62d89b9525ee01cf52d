@@ -1,6 +1,11 @@
-// 1.21.1	2026-11-12T00:13:08.6017036	Loot Tables
+// 1.21.1	2026-11-24T10:17:38.3690609	Loot Tables
 b93c6f30e804bb51e4cb09afca05058c49a964c5 data/productivecows/loot_table/blocks/advanced_cooler.json
 dc967fa12136c3ddfaa9a7417ef64a07f5bb0a0c data/productivecows/loot_table/blocks/breeding_cage.json
+468fa40b458de7101ed9a197cf892a95d5137435 data/productivecows/loot_table/blocks/cooler_block.json
+0a518761ab0d783dc44548170175b3d3ee9be7a5 data/productivecows/loot_table/blocks/cooler_controller.json
+009d280eac495290fe6afac592d8ded166c3b242 data/productivecows/loot_table/blocks/cooler_port.json
+2aca9ddbcba1a3023b9969ba641556032feb9509 data/productivecows/loot_table/blocks/cooler_stamp.json
+22ae77b2134c2437ae3f3d8f3a060bba875b6906 data/productivecows/loot_table/blocks/cooler_tank.json
 7f0802549b274dff955f3ee8d508da1062034976 data/productivecows/loot_table/blocks/cow_cage.json
 9a27f7f49db9c0e8312c0a13c8fee2a604d94cc1 data/productivecows/loot_table/blocks/liquid_cooler.json
 add7233c20f7cb4799aed1028d8500507f4173f1 data/productivecows/loot_table/blocks/milk_generator.json

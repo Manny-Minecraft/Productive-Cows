@@ -150,5 +150,10 @@
   "jei.productivecows.milking_cycle": "%s mB every %s s",
   "jei.productivecows.generator_fuel": "Generator Fuel",
   "jei.productivecows.fuel_energy": "%s RF/mB",
-  "jei.productivecows.fuel_rate": "%s RF/t"
+  "jei.productivecows.fuel_rate": "%s RF/t",
+  "block.productivecows.cooler_controller": "Cooler Controller",
+  "block.productivecows.cooler_block": "Cooler Casing",
+  "block.productivecows.cooler_tank": "Cooler Tank",
+  "block.productivecows.cooler_port": "Cooler Port",
+  "block.productivecows.cooler_stamp": "Cooler Stamp"
 }

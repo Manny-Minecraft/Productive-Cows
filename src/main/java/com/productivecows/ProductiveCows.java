@@ -87,6 +87,31 @@ public class ProductiveCows {
             () -> new com.productivecows.block.AdvancedCoolerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F).requiresCorrectToolForDrops().noOcclusion()));
     public static final DeferredItem<BlockItem> ADVANCED_COOLER_ITEM = ITEMS.registerSimpleBlockItem("advanced_cooler", ADVANCED_COOLER);
 
+    // Cooler multiblock (end game): a 3x3 tower, 3 to 10 blocks tall. The logic arrives with the Controller's block entity
+    public static final DeferredBlock<Block> COOLER_CONTROLLER = BLOCKS.register("cooler_controller",
+            () -> new com.productivecows.block.cooler.CoolerControllerBlock(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem("cooler_controller", COOLER_CONTROLLER);
+
+    public static final DeferredBlock<Block> COOLER_BLOCK = BLOCKS.register("cooler_block", () -> new Block(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cooler_block", COOLER_BLOCK);
+
+    public static final DeferredBlock<Block> COOLER_TANK = BLOCKS.register("cooler_tank", () -> new Block(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_TANK_ITEM = ITEMS.registerSimpleBlockItem("cooler_tank", COOLER_TANK);
+
+    public static final DeferredBlock<Block> COOLER_PORT = BLOCKS.register("cooler_port", () -> new Block(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_PORT_ITEM = ITEMS.registerSimpleBlockItem("cooler_port", COOLER_PORT);
+
+    public static final DeferredBlock<Block> COOLER_STAMP = BLOCKS.register("cooler_stamp", () -> new Block(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_STAMP_ITEM = ITEMS.registerSimpleBlockItem("cooler_stamp", COOLER_STAMP);
+
+    private static BlockBehaviour.Properties coolerPartProperties() {
+        return BlockBehaviour.Properties.of()
+                .mapColor(MapColor.DEEPSLATE)
+                .strength(3.5F)
+                .requiresCorrectToolForDrops()
+                .sound(net.minecraft.world.level.block.SoundType.DEEPSLATE_TILES);
+    }
+
     // Items
     public static final DeferredItem<Item> BASE_UPGRADE = ITEMS.register("base_upgrade", () -> new Item(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> SPEED_UPGRADE = ITEMS.register("speed_upgrade", () -> new com.productivecows.item.UpgradeItem(new Item.Properties().stacksTo(64), "tooltip.productivecows.speed_upgrade"));
@@ -179,6 +204,11 @@ public class ProductiveCows {
                         output.accept(LIQUID_COOLER_ITEM.get());
                         output.accept(MILK_GENERATOR_ITEM.get());
                         output.accept(ADVANCED_COOLER_ITEM.get());
+                        output.accept(COOLER_CONTROLLER_ITEM.get());
+                        output.accept(COOLER_BLOCK_ITEM.get());
+                        output.accept(COOLER_TANK_ITEM.get());
+                        output.accept(COOLER_PORT_ITEM.get());
+                        output.accept(COOLER_STAMP_ITEM.get());
                         output.accept(SPEED_UPGRADE.get());
                         output.accept(EFFICIENCY_UPGRADE.get());
                         output.accept(ENERGY_UPGRADE.get());
