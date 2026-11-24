@@ -33,7 +33,7 @@ public class CoolerTowerProvider implements IBlockComponentProvider, IServerData
             return;
         }
         tooltip.add(Component.translatable(key + "size", data.getInt("Height"), data.getInt("Stamps"), data.getInt("Tanks")));
-        tooltip.add(Component.translatable(key + "fluids", data.getInt("FluidTypes"), data.getInt("Tanks"),
+        tooltip.add(Component.translatable(key + "fluids", data.getInt("FluidTypes"),
                 data.getInt("FluidTotal"), data.getInt("FluidCapacity")).withStyle(ChatFormatting.AQUA));
         int total = data.getInt("CycleTicks");
         if (data.getInt("Progress") > 0 && total > 0) {

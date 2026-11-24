@@ -50,11 +50,11 @@ import java.util.Set;
 
 /**
  * Brain of the Cooler tower. Rechecks the structure every second and switches the {@code formed} state of its
- * blocks, binds the Ports, and holds the shared fluid storage (one fluid type and {@code coolerTankCapacity} mB
- * per Tank), the energy buffer and the output buffer.
+ * blocks, binds the Ports, and holds one shared tank for any mix of fluids ({@code coolerTankCapacity} mB per
+ * Tank), the energy buffer and the output buffer.
  * <p>
- * Cooling runs in cycles: at the start of a cycle {@link StampPlanner} shares the Stamps out among the stored
- * fluids (2 ingots per Stamp, 1000 mB per ingot); while the cycle runs every busy Stamp costs
+ * Cooling runs in cycles: at the start of a cycle {@link StampPlanner} hands every ingot the Stamps can make
+ * (2 per Stamp, 1000 mB each) to the stored fluids in turn; while the cycle runs every busy Stamp costs
  * {@code coolerEnergyPerStamp} RF/t, and without enough energy the cycle pauses. At the end the fluid is drained
  * and the ingots go to the output buffer, which output Ports empty into the inventories next to them.
  */
@@ -64,14 +64,14 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
     /** mB one ingot costs, as in the other coolers. */
     public static final int FLUID_PER_INGOT = 1000;
     private static final int PUSH_INTERVAL = 10;
-    /** Fluid types the GUI can show: the structure allows at most this many Tanks. */
-    public static final int MAX_FLUIDS = CoolerStructure.MAX_TANKS;
+    /** Different fluids the tank can hold at once: more than the mod has, a cap only so the GUI can show them all. */
+    public static final int MAX_FLUIDS = 32;
 
     /** Blocks this Controller has marked as formed; saved so they can be released after a reload. */
     private final List<BlockPos> formedParts = new ArrayList<>();
     private CoolerStructure.Result structure;
 
-    private final MultiFluidStorage<Fluid> fluids = new MultiFluidStorage<>();
+    private final MultiFluidStorage<Fluid> fluids = new MultiFluidStorage<>(MAX_FLUIDS);
 
     // Current cycle: ingots per fluid, busy Stamps and progress. Not saved: the fluid is only drained when a cycle
     // ends, so after a reload the cycle simply starts again
@@ -200,7 +200,7 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
             cycle = plan.ingots();
             activeStamps = plan.activeStamps();
             progress = 0;
-            rotation++;
+            rotation = plan.nextRotation();
         }
         int cost = activeStamps * Math.max(0, Config.coolerEnergyPerStamp);
         if (energy.getEnergyStored() < cost) {
@@ -390,7 +390,7 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
             setChanged();
         }
         if (result.formed()) {
-            fluids.setLimits(result.tanks() * Config.coolerTankCapacity, result.tanks());
+            fluids.setCapacity(result.tanks() * Config.coolerTankCapacity);
         }
         structure = result;
     }
@@ -435,7 +435,8 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
     private final class FluidInput implements IFluidHandler {
         @Override
         public int getTanks() {
-            return Math.max(1, fluids.maxTypes());
+            // Every stored fluid, plus one free "tank" for a new fluid
+            return fluids.contents().size() + 1;
         }
 
         @Override
@@ -589,7 +590,7 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
             int tanks = result.tanks();
             return Component.translatable(key + "formed", result.height(),
                     result.stamps(), result.stamps() * CoolerStructure.INGOTS_PER_STAMP,
-                    tanks, tanks, (long) tanks * Config.coolerTankCapacity);
+                    tanks, (long) tanks * Config.coolerTankCapacity);
         }
         BlockPos at = result.problemPos();
         return switch (result.problem()) {
@@ -645,7 +646,6 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
         }
         tag.put("Fluids", fluidList);
         tag.putInt("FluidCapacity", fluids.capacity());
-        tag.putInt("FluidTypes", fluids.maxTypes());
         tag.putInt("Energy", energy.getEnergyStored());
         tag.put("Output", output.serializeNBT(registries));
     }
@@ -658,7 +658,7 @@ public class CoolerControllerBlockEntity extends BlockEntity implements MenuProv
             formedParts.add(BlockPos.of(packed));
         }
         fluids.clear();
-        fluids.setLimits(tag.getInt("FluidCapacity"), tag.getInt("FluidTypes"));
+        fluids.setCapacity(tag.getInt("FluidCapacity"));
         for (Tag element : tag.getList("Fluids", Tag.TAG_COMPOUND)) {
             CompoundTag fluidTag = (CompoundTag) element;
             ResourceLocation id = ResourceLocation.tryParse(fluidTag.getString("Fluid"));

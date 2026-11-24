@@ -32,7 +32,7 @@ public class CoolerControllerMenu extends AbstractContainerMenu {
     /** Then three slots per fluid: registry id, amount low half, amount high half. */
     public static final int FLUIDS = 13;
     public static final int DATA_COUNT = FLUIDS + CoolerControllerBlockEntity.MAX_FLUIDS * 3;
-    /** Fluid gauges in the GUI: one per Tank the tower can have. */
+    /** Fluid layers the GUI can show: as many as the tank can hold. */
     public static final int FLUIDS_SHOWN = CoolerControllerBlockEntity.MAX_FLUIDS;
 
     public static final int OUTPUT_X = 8;

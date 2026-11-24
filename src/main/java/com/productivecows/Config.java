@@ -44,7 +44,7 @@ public class Config {
 
     private static final ModConfigSpec.IntValue COOLER_CYCLE_TICKS = BUILDER
             .comment("Ticks a Cooler multiblock cycle lasts (20 ticks = 1 second). Every Stamp cools 2 ingots per cycle.")
-            .defineInRange("coolerCycleTicks", 140, 1, Integer.MAX_VALUE);
+            .defineInRange("coolerCycleTicks", 100, 1, Integer.MAX_VALUE);
     private static final ModConfigSpec.IntValue COOLER_ENERGY_PER_STAMP = BUILDER
             .comment("RF per tick each busy Stamp of the Cooler multiblock consumes.")
             .defineInRange("coolerEnergyPerStamp", 60, 0, Integer.MAX_VALUE);

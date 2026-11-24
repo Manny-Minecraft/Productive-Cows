@@ -15,18 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Cooler Controller GUI. One gauge per possible fluid (as many as the tower has Tanks, up to 8; the others are
- * locked), all filled against the shared capacity, an energy bar and the output buffer.
+ * Cooler Controller GUI: one tank holding every fluid as a layer, from the oldest at the bottom, scaled on the
+ * shared capacity; an energy bar, the cycle's progress and the output buffer.
  */
 public class CoolerControllerScreen extends AbstractContainerScreen<CoolerControllerMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ProductiveCows.MODID, "textures/gui/cooler_controller.png");
 
-    // Must match the gauge frames drawn in the texture
-    static final int GAUGE_X = 9;
-    static final int GAUGE_Y = 19;
-    static final int GAUGE_W = 12;
-    static final int GAUGE_H = 46;
-    static final int GAUGE_STEP = 15;
+    // Must match the frames drawn in the texture
+    static final int TANK_X = 9;
+    static final int TANK_Y = 19;
+    static final int TANK_W = 138;
+    static final int TANK_H = 46;
     static final int ENERGY_X = 155;
     static final int ENERGY_W = 12;
     // Progress bar, right of the "Output" label; JEI's click area covers it too
@@ -49,27 +48,41 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
         renderGaugeTooltips(graphics, mouseX, mouseY);
     }
 
+    /** Top edge (in pixels from the tank's bottom) of each layer; rounding on the running total keeps them exact. */
+    private int[] layerTops() {
+        int capacity = Math.max(1, Math.max(menu.getCapacity(), totalFluid()));
+        int[] tops = new int[CoolerControllerMenu.FLUIDS_SHOWN];
+        long sum = 0;
+        int previous = 0;
+        for (int i = 0; i < tops.length; i++) {
+            int amount = menu.getFluidAmount(i);
+            sum += amount;
+            int top = (int) Math.min(TANK_H, sum * TANK_H / capacity);
+            if (amount > 0 && top <= previous) {
+                top = Math.min(TANK_H, previous + 1); // every fluid stays visible, at least one pixel
+            }
+            tops[i] = amount > 0 ? top : previous;
+            previous = tops[i];
+        }
+        return tops;
+    }
+
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
         graphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
 
-        int capacity = menu.getCapacity();
-        int tanks = menu.getTanks();
-        for (int i = 0; i < CoolerControllerMenu.FLUIDS_SHOWN; i++) {
-            int gx = x + GAUGE_X + i * GAUGE_STEP;
-            int gy = y + GAUGE_Y;
-            if (i >= tanks) {
-                // Locked: the tower needs one more Tank for this fluid
-                graphics.fill(gx, gy, gx + GAUGE_W, gy + GAUGE_H, 0xFF4A4A4A);
-                continue;
-            }
+        int[] tops = layerTops();
+        int bottom = y + TANK_Y + TANK_H;
+        int previous = 0;
+        for (int i = 0; i < tops.length; i++) {
             int amount = menu.getFluidAmount(i);
-            if (amount > 0 && capacity > 0 && menu.getFluid(i) != Fluids.EMPTY) {
-                int h = Math.max(1, Math.min(GAUGE_H, (int) ((long) amount * GAUGE_H / capacity)));
-                FluidGuiRenderer.render(graphics, new FluidStack(menu.getFluid(i), amount), gx, gy + GAUGE_H - h, GAUGE_W, h);
+            if (amount > 0 && tops[i] > previous && menu.getFluid(i) != Fluids.EMPTY) {
+                FluidGuiRenderer.render(graphics, new FluidStack(menu.getFluid(i), amount),
+                        x + TANK_X, bottom - tops[i], TANK_W, tops[i] - previous);
             }
+            previous = tops[i];
         }
 
         graphics.fill(x + PROGRESS_X, y + PROGRESS_Y, x + PROGRESS_X + PROGRESS_W, y + PROGRESS_Y + PROGRESS_H, 0xFF373737);
@@ -81,10 +94,9 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
         int energy = menu.getEnergy();
         int maxEnergy = menu.getMaxEnergy();
         if (energy > 0 && maxEnergy > 0) {
-            int h = Math.max(1, Math.min(GAUGE_H, (int) ((long) energy * GAUGE_H / maxEnergy)));
+            int h = Math.max(1, Math.min(TANK_H, (int) ((long) energy * TANK_H / maxEnergy)));
             int ex = x + ENERGY_X;
-            int ey = y + GAUGE_Y + GAUGE_H - h;
-            graphics.fillGradient(ex, ey, ex + ENERGY_W, y + GAUGE_Y + GAUGE_H, 0xFFE0402A, 0xFF8A1A10);
+            graphics.fillGradient(ex, y + TANK_Y + TANK_H - h, ex + ENERGY_W, y + TANK_Y + TANK_H, 0xFFE0402A, 0xFF8A1A10);
         }
     }
 
@@ -99,23 +111,22 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
     }
 
     private void renderGaugeTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
-        int capacity = menu.getCapacity();
-        for (int i = 0; i < CoolerControllerMenu.FLUIDS_SHOWN; i++) {
-            int gx = leftPos + GAUGE_X + i * GAUGE_STEP;
-            int gy = topPos + GAUGE_Y;
-            if (!isHovering(gx - leftPos, gy - topPos, GAUGE_W, GAUGE_H, mouseX, mouseY)) {
-                continue;
-            }
+        if (isHovering(TANK_X, TANK_Y, TANK_W, TANK_H, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
-            if (i >= menu.getTanks()) {
-                lines.add(Component.translatable("gui.productivecows.cooler.fluid_locked").withStyle(ChatFormatting.GRAY));
-            } else if (menu.getFluidAmount(i) > 0) {
-                lines.add(new FluidStack(menu.getFluid(i), 1).getHoverName().copy().withStyle(ChatFormatting.AQUA));
-                lines.add(Component.literal(menu.getFluidAmount(i) + " mB").withStyle(ChatFormatting.GRAY));
-            } else {
-                lines.add(Component.translatable("gui.productivecows.cooler.fluid_empty").withStyle(ChatFormatting.GRAY));
+            int fromBottom = topPos + TANK_Y + TANK_H - mouseY;
+            int[] tops = layerTops();
+            int previous = 0;
+            for (int i = 0; i < tops.length; i++) {
+                if (menu.getFluidAmount(i) > 0 && fromBottom > previous && fromBottom <= tops[i]) {
+                    lines.add(new FluidStack(menu.getFluid(i), 1).getHoverName().copy().withStyle(ChatFormatting.AQUA));
+                    lines.add(Component.literal(menu.getFluidAmount(i) + " mB").withStyle(ChatFormatting.GRAY));
+                }
+                previous = tops[i];
             }
-            lines.add(Component.translatable("gui.productivecows.cooler.shared", totalFluid(), capacity).withStyle(ChatFormatting.DARK_GRAY));
+            if (lines.isEmpty()) {
+                lines.add(Component.translatable("gui.productivecows.cooler.tank_free").withStyle(ChatFormatting.GRAY));
+            }
+            lines.add(Component.translatable("gui.productivecows.cooler.shared", totalFluid(), menu.getCapacity()).withStyle(ChatFormatting.DARK_GRAY));
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             return;
         }
@@ -129,13 +140,14 @@ public class CoolerControllerScreen extends AbstractContainerScreen<CoolerContro
                 lines.add(Component.translatable("tooltip.productivecows.jade.progress", menu.getProgress() * 100 / Math.max(1, menu.getCycleTicks()))
                         .withStyle(ChatFormatting.GREEN));
                 lines.add(Component.translatable("gui.productivecows.cooler.cycle", menu.getCycleIngots(), stamps).withStyle(ChatFormatting.GRAY));
-                lines.add(Component.translatable(menu.getEnergy() < cost ? "gui.productivecows.cooler.no_power" : "gui.productivecows.consuming", cost)
-                        .withStyle(menu.getEnergy() < cost ? ChatFormatting.RED : ChatFormatting.YELLOW));
+                boolean noPower = menu.getEnergy() < cost;
+                lines.add(Component.translatable(noPower ? "gui.productivecows.cooler.no_power" : "gui.productivecows.consuming", cost)
+                        .withStyle(noPower ? ChatFormatting.RED : ChatFormatting.YELLOW));
             }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             return;
         }
-        if (isHovering(ENERGY_X, GAUGE_Y, ENERGY_W, GAUGE_H, mouseX, mouseY)) {
+        if (isHovering(ENERGY_X, TANK_Y, ENERGY_W, TANK_H, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             lines.add(Component.translatable("gui.productivecows.energy").withStyle(ChatFormatting.RED));
             lines.add(Component.literal(menu.getEnergy() + " / " + menu.getMaxEnergy() + " RF").withStyle(ChatFormatting.GRAY));
