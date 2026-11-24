@@ -51,6 +51,12 @@ public class BreedingCageBlockEntity extends BlockEntity implements MenuProvider
             if (slot == 3) return stack; // Cannot insert into output
             return super.insertItem(slot, stack, simulate);
         }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            // One cow per parent slot: the breeding cooldown is written on the item, so a stack would all go on cooldown
+            return slot == 0 || slot == 1 ? 1 : super.getSlotLimit(slot);
+        }
     };
 
     // Hoppers and pipes may only take the offspring; the menu uses itemHandler directly
