@@ -60,32 +60,6 @@ Invalid definitions (unknown fluid or cooling item, malformed tag, `breed_chance
 
 ---
 
-## Cow Stats
-
-Every material cow has three stats, from 1 to 10 (`cowStatMax`):
-
-- **Yield**: fluid per Cow Cage cycle, +50% per level (`cowYieldPerLevel`): 5.5x at 10.
-- **Metabolism**: speed of the Cow Cage cycle and of the bucket milking cooldown, +33% per level (`cowMetabolismPerLevel`): about 4x at 10.
-- **Fertility**: speed of breeding and of the parents' breeding cooldown in the Breeding Cage, +33% per level (`cowFertilityPerLevel`).
-
-New cows start at 1/1/1. A calf gets, for each stat, its parents' average rounded down, plus a chance of +1 that goes from 80% at level 1 (`cowStatGrowthChance`) down to 40% just below the maximum (`cowStatMinGrowthChance`); it never goes above the better parent + 1. Mutations inherit the same way. Going from two 1/1/1 cows to a 10/10/10 takes about 40 breedings, around 15 minutes with one Breeding Cage (parents rest 45 s, `breedingCooldownTicks`, less with higher Fertility). Stats show in the captured cow's tooltip and in Jade.
-
----
-
-## Cooler Multiblock (End Game)
-
-A 3x3 tower, from 3 to 10 blocks tall (`coolerMaxHeight`, up to 64), that cools many fluids at once. Sneak + right-click the Controller to show a hologram of the blocks still missing.
-
-- **Cooler Casing**: the frame. All corners are Casing, as are the bottom and top layers (except for Ports or the Controller).
-- **Cooler Controller**: one per tower, with its screen facing out. Right-click opens the GUI; sneak + right-click tells you what is wrong with an unfinished tower. Right-click it with a bucket to pour the fluid in.
-- **Cooler Tank**: inner layers only, up to 8. Each Tank adds `coolerTankCapacity` mB (16000) to the tower's single tank, which holds any mix of fluids, stacked as layers in the GUI.
-- **Cooler Stamp**: the centre of each inner layer. Each Stamp cools 2 ingots per cycle (`coolerCycleTicks`, 5 s) and uses `coolerEnergyPerStamp` RF/t (60) while working. Each cycle makes every ingot it can, sharing them among the fluids in turn.
-- **Cooler Port**: right-click to switch between input (fluids and RF) and output (ingots, pushed into adjacent inventories).
-
-A full 3x10x3 tower has 8 Stamps and cools 16 ingots every 5 seconds, four times a fully upgraded Advanced Cooler.
-
----
-
 ## Issues and Bug Reports
 
 Found a bug or have a suggestion? We'd love to hear it! 
