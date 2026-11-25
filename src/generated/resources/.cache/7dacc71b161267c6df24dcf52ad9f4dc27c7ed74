@@ -1,3 +1,3 @@
-// 1.21.1	2026-11-12T00:13:08.6007043	Tags for minecraft:block mod id productivecows
-b36d7aaae781e9ab052051ce4ba4d89b8ae8635d data/minecraft/tags/block/mineable/pickaxe.json
-b36d7aaae781e9ab052051ce4ba4d89b8ae8635d data/minecraft/tags/block/needs_stone_tool.json
+// 1.21.1	2026-11-24T10:17:38.367063	Tags for minecraft:block mod id productivecows
+aac7ee02cbc8c61f5c90e5238baffb84ccebbe20 data/minecraft/tags/block/mineable/pickaxe.json
+aac7ee02cbc8c61f5c90e5238baffb84ccebbe20 data/minecraft/tags/block/needs_stone_tool.json

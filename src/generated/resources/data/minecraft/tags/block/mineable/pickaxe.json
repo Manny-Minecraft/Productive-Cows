@@ -4,6 +4,11 @@
     "productivecows:cow_cage",
     "productivecows:liquid_cooler",
     "productivecows:milk_generator",
-    "productivecows:advanced_cooler"
+    "productivecows:advanced_cooler",
+    "productivecows:cooler_controller",
+    "productivecows:cooler_block",
+    "productivecows:cooler_tank",
+    "productivecows:cooler_port",
+    "productivecows:cooler_stamp"
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "formed=false,mode=input": {
+      "model": "productivecows:block/cooler_port"
+    },
+    "formed=false,mode=output": {
+      "model": "productivecows:block/cooler_port_output"
+    },
+    "formed=true,mode=input": {
+      "model": "productivecows:block/cooler_port"
+    },
+    "formed=true,mode=output": {
+      "model": "productivecows:block/cooler_port_output"
+    }
+  }
+}

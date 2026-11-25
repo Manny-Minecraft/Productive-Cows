@@ -34,6 +34,7 @@ public class CowStickItem extends Item {
                     entityData.putString("id", "productivecows:material_cow");
                     entityData.putString("CowDefinitionId", defId.toString());
                     entityData.putInt("MilkingCooldown", cow.getMilkingCooldown());
+                    com.productivecows.genetics.CowStatsNbt.write(entityData, cow.getStats());
                     CapturedCowItem.saveAge(entityData, cow);
                     
                     if (cow.hasCustomName()) {

@@ -41,6 +41,21 @@ public class MaterialCowEntity extends Cow {
 
     // Server-only: the client never reads it (Jade gets it from server data), so it is not synced entity data
     private int milkingCooldown;
+    /** Yield, Metabolism and Fertility; saved with the cow and carried by the Cow Stick. */
+    private com.productivecows.genetics.CowStats stats = com.productivecows.genetics.CowStats.BASE;
+
+    public com.productivecows.genetics.CowStats getStats() {
+        return stats;
+    }
+
+    public void setStats(com.productivecows.genetics.CowStats stats) {
+        this.stats = stats;
+    }
+
+    /** The 20-minute bucket cooldown, shortened by Metabolism. */
+    private int bucketCooldown() {
+        return (int) Math.round(24000 / com.productivecows.genetics.CowStatsNbt.metabolismMultiplier(stats));
+    }
 
     public MaterialCowEntity(EntityType<? extends Cow> type, Level level) {
         super(type, level);
@@ -103,6 +118,7 @@ public class MaterialCowEntity extends Cow {
         ResourceLocation id = getCowDefinitionId();
         tag.putString("CowDefinitionId", id == null ? "" : id.toString());
         tag.putInt("MilkingCooldown", this.getMilkingCooldown());
+        com.productivecows.genetics.CowStatsNbt.write(tag, stats);
     }
 
     @Override
@@ -117,6 +133,8 @@ public class MaterialCowEntity extends Cow {
         if (tag.contains("MilkingCooldown")) {
             setMilkingCooldown(tag.getInt("MilkingCooldown"));
         }
+        // Also reached by spawn eggs and captured cows, whose ENTITY_DATA is loaded into the new cow
+        stats = com.productivecows.genetics.CowStatsNbt.read(tag);
     }
 
     @Override
@@ -144,7 +162,7 @@ public class MaterialCowEntity extends Cow {
 
         // Set milking cooldown to 24,000 ticks (20 minutes) if spawned from a spawn egg to prevent infinite milking exploits
         if (spawnType == MobSpawnType.SPAWN_EGG) {
-            this.setMilkingCooldown(24000);
+            this.setMilkingCooldown(bucketCooldown());
         }
         
         return data;
@@ -175,7 +193,7 @@ public class MaterialCowEntity extends Cow {
                                 player.setItemInHand(hand, remaining);
 
                                 // Set milking cooldown to 24,000 ticks (20 minutes)
-                                this.setMilkingCooldown(24000);
+                                this.setMilkingCooldown(bucketCooldown());
                                 return InteractionResult.SUCCESS;
                             } else {
                                 player.displayClientMessage(Component.translatable("message.productivecows.cow.no_bucket", fluidId.toString()), true);
@@ -234,6 +252,9 @@ public class MaterialCowEntity extends Cow {
                 }
 
                 baby.setCowDefinitionId(babyId);
+                // Calves inherit their parents' stats, as in the Breeding Cage
+                baby.setStats(com.productivecows.genetics.CowStats.breed(this.stats, otherMC.stats, com.productivecows.genetics.CowStatsNbt.max(),
+                        com.productivecows.Config.cowStatGrowthChance, com.productivecows.Config.cowStatMinGrowthChance, this.random::nextDouble));
             }
         }
         return baby;

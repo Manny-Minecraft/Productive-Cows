@@ -86,11 +86,13 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
     public static final int MILKING_CYCLE_TICKS = 400;
 
     private int milkingTimer = MILKING_CYCLE_TICKS;
+    /** Length of the current cow's cycle: MILKING_CYCLE_TICKS shortened by its Metabolism. */
+    private int cycleTicks = MILKING_CYCLE_TICKS;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == 0 ? milkingTimer : 0;
+            return index == 0 ? milkingTimer : index == 1 ? cycleTicks : 0;
         }
 
         @Override
@@ -102,7 +104,7 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 1;
+            return 2;
         }
     };
 
@@ -187,7 +189,14 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
         if (def != null) {
             Fluid fluid = BuiltInRegistries.FLUID.get(def.fluidId());
             if (fluid != null && fluid != net.minecraft.world.level.material.Fluids.EMPTY) {
-                int amount = getYieldPerCycle(def);
+                com.productivecows.genetics.CowStats stats = com.productivecows.genetics.CowStatsNbt.of(itemHandler.getStackInSlot(0));
+                // Yield multiplies the fluid per cycle (never more than the tank holds), Metabolism shortens the cycle
+                int amount = Math.min(fluidTank.getCapacity(),
+                        (int) Math.round(getYieldPerCycle(def) * com.productivecows.genetics.CowStatsNbt.yieldMultiplier(stats)));
+                cycleTicks = Math.max(20, (int) Math.round(MILKING_CYCLE_TICKS / com.productivecows.genetics.CowStatsNbt.metabolismMultiplier(stats)));
+                if (milkingTimer > cycleTicks) {
+                    milkingTimer = cycleTicks;
+                }
                 FluidStack fluidStack = new FluidStack(fluid, amount);
                 // FluidTank fill returns the amount filled, checking if we can accept the whole cycle
                 int filled = fluidTank.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
@@ -197,12 +206,13 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                         setChanged();
                     } else {
                         fluidTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
-                        milkingTimer = MILKING_CYCLE_TICKS;
+                        milkingTimer = cycleTicks;
                         setChanged();
                     }
                 }
             }
         } else if (isVanillaCow()) {
+            cycleTicks = MILKING_CYCLE_TICKS;
             Fluid fluid = com.productivecows.fluid.ModFluids.LIQUID_MILK.source().get();
             FluidStack fluidStack = new FluidStack(fluid, 1000);
             int filled = fluidTank.fill(fluidStack, IFluidHandler.FluidAction.SIMULATE);
@@ -217,6 +227,7 @@ public class CowCageBlockEntity extends BlockEntity implements MenuProvider {
                 }
             }
         } else {
+            cycleTicks = MILKING_CYCLE_TICKS;
             if (milkingTimer != MILKING_CYCLE_TICKS) {
                 milkingTimer = MILKING_CYCLE_TICKS;
                 setChanged();

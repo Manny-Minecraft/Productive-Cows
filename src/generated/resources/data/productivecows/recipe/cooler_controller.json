@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "productivecows:advanced_cooler"
+    },
+    "C": {
+      "item": "productivecows:cooler_block"
+    },
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "CRC",
+    "DAD",
+    "CRC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "productivecows:cooler_controller"
+  }
+}

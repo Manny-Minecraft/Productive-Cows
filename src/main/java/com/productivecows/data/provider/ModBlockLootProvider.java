@@ -32,7 +32,12 @@ public class ModBlockLootProvider extends BlockLootSubProvider {
                 ProductiveCows.COW_CAGE.get(),
                 ProductiveCows.LIQUID_COOLER.get(),
                 ProductiveCows.MILK_GENERATOR.get(),
-                ProductiveCows.ADVANCED_COOLER.get()
+                ProductiveCows.ADVANCED_COOLER.get(),
+                ProductiveCows.COOLER_CONTROLLER.get(),
+                ProductiveCows.COOLER_BLOCK.get(),
+                ProductiveCows.COOLER_TANK.get(),
+                ProductiveCows.COOLER_PORT.get(),
+                ProductiveCows.COOLER_STAMP.get()
         );
     }
 }

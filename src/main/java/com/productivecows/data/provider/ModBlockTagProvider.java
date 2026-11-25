@@ -25,14 +25,24 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 ProductiveCows.COW_CAGE.get(),
                 ProductiveCows.LIQUID_COOLER.get(),
                 ProductiveCows.MILK_GENERATOR.get(),
-                ProductiveCows.ADVANCED_COOLER.get()
+                ProductiveCows.ADVANCED_COOLER.get(),
+                ProductiveCows.COOLER_CONTROLLER.get(),
+                ProductiveCows.COOLER_BLOCK.get(),
+                ProductiveCows.COOLER_TANK.get(),
+                ProductiveCows.COOLER_PORT.get(),
+                ProductiveCows.COOLER_STAMP.get()
         );
         tag(BlockTags.NEEDS_STONE_TOOL).add(
                 ProductiveCows.BREEDING_CAGE.get(),
                 ProductiveCows.COW_CAGE.get(),
                 ProductiveCows.LIQUID_COOLER.get(),
                 ProductiveCows.MILK_GENERATOR.get(),
-                ProductiveCows.ADVANCED_COOLER.get()
+                ProductiveCows.ADVANCED_COOLER.get(),
+                ProductiveCows.COOLER_CONTROLLER.get(),
+                ProductiveCows.COOLER_BLOCK.get(),
+                ProductiveCows.COOLER_TANK.get(),
+                ProductiveCows.COOLER_PORT.get(),
+                ProductiveCows.COOLER_STAMP.get()
         );
     }
 }

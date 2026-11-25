@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "productivecows:block/cooler_tank"
+    },
+    "formed=true": {
+      "model": "productivecows:block/cooler_tank"
+    }
+  }
+}

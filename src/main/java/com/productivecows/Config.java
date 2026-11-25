@@ -12,7 +12,7 @@ public class Config {
     // Breeding Settings
     private static final ModConfigSpec.IntValue BREEDING_COOLDOWN = BUILDER
             .comment("Cooldown applied to parent cows after a successful breeding in ticks (20 ticks = 1 second).")
-            .defineInRange("breedingCooldownTicks", 3000, 0, Integer.MAX_VALUE);
+            .defineInRange("breedingCooldownTicks", 900, 0, Integer.MAX_VALUE);
 
     // Basic Cooler Settings
     private static final ModConfigSpec.IntValue BASIC_COOLER_COOK_TIME = BUILDER
@@ -33,6 +33,45 @@ public class Config {
             .comment("Base fluid amount (mB) consumed per operation in the Advanced Cooler (without upgrades).")
             .defineInRange("advancedCoolerFluidCost", 1000, 1, 8000);
 
+    // Cooler multiblock
+    private static final ModConfigSpec.IntValue COOLER_TANK_CAPACITY = BUILDER
+            .comment("Fluid (mB) each Cooler Tank adds to the multiblock's shared storage.")
+            .defineInRange("coolerTankCapacity", 16000, 1000, 1000000);
+
+    private static final ModConfigSpec.IntValue COOLER_ENERGY_CAPACITY = BUILDER
+            .comment("RF the Cooler multiblock's Controller can store.")
+            .defineInRange("coolerEnergyCapacity", 200000, 1000, Integer.MAX_VALUE);
+
+    private static final ModConfigSpec.IntValue COOLER_MAX_HEIGHT = BUILDER
+            .comment("Tallest Cooler multiblock tower allowed, in blocks. Each inner layer can hold one Stamp.")
+            .defineInRange("coolerMaxHeight", 10, 3, 64);
+    private static final ModConfigSpec.IntValue COOLER_CYCLE_TICKS = BUILDER
+            .comment("Ticks a Cooler multiblock cycle lasts (20 ticks = 1 second). Every Stamp cools 2 ingots per cycle.")
+            .defineInRange("coolerCycleTicks", 100, 1, Integer.MAX_VALUE);
+    private static final ModConfigSpec.IntValue COOLER_ENERGY_PER_STAMP = BUILDER
+            .comment("RF per tick each busy Stamp of the Cooler multiblock consumes.")
+            .defineInRange("coolerEnergyPerStamp", 60, 0, Integer.MAX_VALUE);
+
+    // Cow stats (Yield, Metabolism, Fertility)
+    private static final ModConfigSpec.IntValue COW_STAT_MAX = BUILDER
+            .comment("Highest level a cow stat can reach.")
+            .defineInRange("cowStatMax", 10, 1, 100);
+    private static final ModConfigSpec.IntValue COW_STAT_GROWTH_CHANCE = BUILDER
+            .comment("Chance (%) that a calf's stat grows by 1 over its parents' average when that average is 1.")
+            .defineInRange("cowStatGrowthChance", 80, 0, 100);
+    private static final ModConfigSpec.IntValue COW_STAT_MIN_GROWTH_CHANCE = BUILDER
+            .comment("Chance (%) of growing by 1 just below the maximum; between level 1 and there it goes down evenly.")
+            .defineInRange("cowStatMinGrowthChance", 40, 0, 100);
+    private static final ModConfigSpec.IntValue COW_YIELD_PER_LEVEL = BUILDER
+            .comment("Extra fluid (%) per Cow Cage cycle for every Yield level above 1.")
+            .defineInRange("cowYieldPerLevel", 50, 0, 1000);
+    private static final ModConfigSpec.IntValue COW_METABOLISM_PER_LEVEL = BUILDER
+            .comment("Extra speed (%) of the Cow Cage cycle and the bucket milking cooldown for every Metabolism level above 1.")
+            .defineInRange("cowMetabolismPerLevel", 33, 0, 1000);
+    private static final ModConfigSpec.IntValue COW_FERTILITY_PER_LEVEL = BUILDER
+            .comment("Extra speed (%) of breeding and of the breeding cooldown for every Fertility level above 1.")
+            .defineInRange("cowFertilityPerLevel", 33, 0, 1000);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int breedingCooldownTicks;
@@ -43,6 +82,19 @@ public class Config {
     public static int advancedCoolerEnergyCost;
     public static int advancedCoolerCookTime;
     public static int advancedCoolerFluidCost;
+
+    public static int coolerTankCapacity;
+    public static int coolerEnergyCapacity;
+    public static int coolerCycleTicks;
+    public static int coolerMaxHeight = 10;
+
+    public static int cowStatMax = 10;
+    public static int cowStatGrowthChance = 80;
+    public static int cowStatMinGrowthChance = 40;
+    public static int cowYieldPerLevel = 50;
+    public static int cowMetabolismPerLevel = 33;
+    public static int cowFertilityPerLevel = 33;
+    public static int coolerEnergyPerStamp;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -56,5 +108,17 @@ public class Config {
         advancedCoolerEnergyCost = ADVANCED_COOLER_ENERGY_COST.get();
         advancedCoolerCookTime = ADVANCED_COOLER_COOK_TIME.get();
         advancedCoolerFluidCost = ADVANCED_COOLER_FLUID_COST.get();
+
+        coolerTankCapacity = COOLER_TANK_CAPACITY.get();
+        coolerEnergyCapacity = COOLER_ENERGY_CAPACITY.get();
+        coolerCycleTicks = COOLER_CYCLE_TICKS.get();
+        coolerMaxHeight = COOLER_MAX_HEIGHT.get();
+        cowStatMax = COW_STAT_MAX.get();
+        cowStatGrowthChance = COW_STAT_GROWTH_CHANCE.get();
+        cowStatMinGrowthChance = COW_STAT_MIN_GROWTH_CHANCE.get();
+        cowYieldPerLevel = COW_YIELD_PER_LEVEL.get();
+        cowMetabolismPerLevel = COW_METABOLISM_PER_LEVEL.get();
+        cowFertilityPerLevel = COW_FERTILITY_PER_LEVEL.get();
+        coolerEnergyPerStamp = COOLER_ENERGY_PER_STAMP.get();
     }
 }

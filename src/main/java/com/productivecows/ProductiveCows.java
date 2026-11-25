@@ -87,6 +87,44 @@ public class ProductiveCows {
             () -> new com.productivecows.block.AdvancedCoolerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F).requiresCorrectToolForDrops().noOcclusion()));
     public static final DeferredItem<BlockItem> ADVANCED_COOLER_ITEM = ITEMS.registerSimpleBlockItem("advanced_cooler", ADVANCED_COOLER);
 
+    // Cooler multiblock (end game): a 3x3 tower, 3 to 10 blocks tall. The logic arrives with the Controller's block entity
+    public static final DeferredBlock<Block> COOLER_CONTROLLER = BLOCKS.register("cooler_controller",
+            () -> new com.productivecows.block.cooler.CoolerControllerBlock(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem("cooler_controller", COOLER_CONTROLLER);
+
+    public static final DeferredBlock<Block> COOLER_BLOCK = BLOCKS.register("cooler_block",
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.CASING, coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("cooler_block", COOLER_BLOCK);
+
+    // Glass window: it must not hide the faces of its neighbours, like vanilla glass
+    public static final DeferredBlock<Block> COOLER_TANK = BLOCKS.register("cooler_tank",
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.TANK,
+                    coolerPartProperties().noOcclusion().isViewBlocking((state, level, pos) -> false)));
+    public static final DeferredItem<BlockItem> COOLER_TANK_ITEM = ITEMS.registerSimpleBlockItem("cooler_tank", COOLER_TANK);
+
+    public static final DeferredBlock<Block> COOLER_PORT = BLOCKS.register("cooler_port",
+            () -> new com.productivecows.block.cooler.CoolerPortBlock(coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_PORT_ITEM = ITEMS.registerSimpleBlockItem("cooler_port", COOLER_PORT);
+
+    public static final DeferredBlock<Block> COOLER_STAMP = BLOCKS.register("cooler_stamp",
+            () -> new com.productivecows.block.cooler.CoolerPartBlock(com.productivecows.multiblock.CoolerPart.STAMP, coolerPartProperties()));
+    public static final DeferredItem<BlockItem> COOLER_STAMP_ITEM = ITEMS.registerSimpleBlockItem("cooler_stamp", COOLER_STAMP);
+
+    private static BlockBehaviour.Properties coolerPartProperties() {
+        return BlockBehaviour.Properties.of()
+                .mapColor(MapColor.DEEPSLATE)
+                .strength(3.5F)
+                .requiresCorrectToolForDrops()
+                .sound(net.minecraft.world.level.block.SoundType.DEEPSLATE_TILES);
+    }
+
+    // Creative only (no recipe): unlimited RF, for testing and creative builds
+    public static final DeferredBlock<Block> CREATIVE_ENERGY_SOURCE = BLOCKS.register("creative_energy_source",
+            () -> new com.productivecows.block.CreativeEnergyBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE)
+                    .strength(-1.0F, 3600000.0F).noLootTable()));
+    public static final DeferredItem<BlockItem> CREATIVE_ENERGY_SOURCE_ITEM = ITEMS.registerSimpleBlockItem("creative_energy_source", CREATIVE_ENERGY_SOURCE,
+            new Item.Properties().rarity(net.minecraft.world.item.Rarity.EPIC));
+
     // Items
     public static final DeferredItem<Item> BASE_UPGRADE = ITEMS.register("base_upgrade", () -> new Item(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> SPEED_UPGRADE = ITEMS.register("speed_upgrade", () -> new com.productivecows.item.UpgradeItem(new Item.Properties().stacksTo(64), "tooltip.productivecows.speed_upgrade"));
@@ -136,6 +174,18 @@ public class ProductiveCows {
             () -> BlockEntityType.Builder.of(CowCageBlockEntity::new, COW_CAGE.get()).build(null)
     );
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.productivecows.block.entity.CoolerControllerBlockEntity>> COOLER_CONTROLLER_BE = BLOCK_ENTITY_TYPES.register("cooler_controller",
+            () -> BlockEntityType.Builder.of(com.productivecows.block.entity.CoolerControllerBlockEntity::new, COOLER_CONTROLLER.get()).build(null)
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.productivecows.block.entity.CoolerPortBlockEntity>> COOLER_PORT_BE = BLOCK_ENTITY_TYPES.register("cooler_port",
+            () -> BlockEntityType.Builder.of(com.productivecows.block.entity.CoolerPortBlockEntity::new, COOLER_PORT.get()).build(null)
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.productivecows.block.entity.CreativeEnergyBlockEntity>> CREATIVE_ENERGY_BE = BLOCK_ENTITY_TYPES.register("creative_energy_source",
+            () -> BlockEntityType.Builder.of(com.productivecows.block.entity.CreativeEnergyBlockEntity::new, CREATIVE_ENERGY_SOURCE.get()).build(null)
+    );
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LiquidCoolerBlockEntity>> LIQUID_COOLER_BE = BLOCK_ENTITY_TYPES.register("liquid_cooler",
             () -> BlockEntityType.Builder.of(LiquidCoolerBlockEntity::new, LIQUID_COOLER.get()).build(null)
     );
@@ -164,6 +214,10 @@ public class ProductiveCows {
             () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(com.productivecows.menu.MilkGeneratorMenu::new)
     );
 
+    public static final DeferredHolder<MenuType<?>, MenuType<com.productivecows.menu.CoolerControllerMenu>> COOLER_CONTROLLER_MENU = MENU_TYPES.register("cooler_controller",
+            () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(com.productivecows.menu.CoolerControllerMenu::new)
+    );
+
     public static final DeferredHolder<MenuType<?>, MenuType<com.productivecows.menu.AdvancedCoolerMenu>> ADVANCED_COOLER_MENU = MENU_TYPES.register("advanced_cooler",
             () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(com.productivecows.menu.AdvancedCoolerMenu::new)
     );
@@ -179,6 +233,12 @@ public class ProductiveCows {
                         output.accept(LIQUID_COOLER_ITEM.get());
                         output.accept(MILK_GENERATOR_ITEM.get());
                         output.accept(ADVANCED_COOLER_ITEM.get());
+                        output.accept(COOLER_CONTROLLER_ITEM.get());
+                        output.accept(COOLER_BLOCK_ITEM.get());
+                        output.accept(COOLER_TANK_ITEM.get());
+                        output.accept(COOLER_PORT_ITEM.get());
+                        output.accept(COOLER_STAMP_ITEM.get());
+                        output.accept(CREATIVE_ENERGY_SOURCE_ITEM.get());
                         output.accept(SPEED_UPGRADE.get());
                         output.accept(EFFICIENCY_UPGRADE.get());
                         output.accept(ENERGY_UPGRADE.get());
@@ -276,6 +336,7 @@ public class ProductiveCows {
 
 if (net.neoforged.fml.loading.FMLEnvironment.dist == Dist.CLIENT) {
             NeoForge.EVENT_BUS.addListener(com.productivecows.client.ClientModBusEvents::onLoggingOut);
+            NeoForge.EVENT_BUS.addListener(com.productivecows.client.CoolerPreview::onRenderLevel);
         }
 
         // Balance values live in the server config (config/productivecows-server.toml on NeoForge 21.1),

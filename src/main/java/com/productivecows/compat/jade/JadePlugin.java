@@ -19,6 +19,8 @@ public class JadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(CoolerComponentProvider.INSTANCE, LiquidCoolerBlockEntity.class);
         registration.registerBlockDataProvider(CoolerComponentProvider.INSTANCE, AdvancedCoolerBlockEntity.class);
         registration.registerEntityDataProvider(CowComponentProvider.INSTANCE, MaterialCowEntity.class);
+        registration.registerBlockDataProvider(CoolerTowerProvider.INSTANCE, com.productivecows.block.entity.CoolerControllerBlockEntity.class);
+        registration.registerBlockDataProvider(CoolerTowerProvider.INSTANCE, com.productivecows.block.entity.CoolerPortBlockEntity.class);
     }
 
     @Override
@@ -26,5 +28,7 @@ public class JadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(CoolerComponentProvider.INSTANCE, LiquidCoolerBlock.class);
         registration.registerBlockComponent(CoolerComponentProvider.INSTANCE, AdvancedCoolerBlock.class);
         registration.registerEntityComponent(CowComponentProvider.INSTANCE, MaterialCowEntity.class);
+        registration.registerBlockComponent(CoolerTowerProvider.INSTANCE, com.productivecows.block.cooler.CoolerControllerBlock.class);
+        registration.registerBlockComponent(CoolerTowerProvider.INSTANCE, com.productivecows.block.cooler.CoolerPortBlock.class);
     }
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "productivecows:block/cooler_stamp_top",
+    "side": "productivecows:block/cooler_stamp_side"
+  }
+}

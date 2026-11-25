@@ -17,6 +17,29 @@ public class ModBusEvents {
     @SubscribeEvent
     public static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
+                net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,
+                ProductiveCows.CREATIVE_ENERGY_BE.get(),
+                (be, side) -> be.getEnergyStorageCapability()
+        );
+
+        // Cooler Ports forward their Controller's handlers, depending on their mode
+        event.registerBlockEntity(
+                net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
+                ProductiveCows.COOLER_PORT_BE.get(),
+                (be, side) -> be.getFluidHandlerCapability()
+        );
+        event.registerBlockEntity(
+                net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,
+                ProductiveCows.COOLER_PORT_BE.get(),
+                (be, side) -> be.getEnergyStorageCapability()
+        );
+        event.registerBlockEntity(
+                net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
+                ProductiveCows.COOLER_PORT_BE.get(),
+                (be, side) -> be.getItemHandlerCapability()
+        );
+
+        event.registerBlockEntity(
                 net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
                 ProductiveCows.COW_CAGE_BE.get(),
                 (be, side) -> be.getItemHandlerCapability()

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_liquid_cooler": {
+      "conditions": {
+        "items": [
+          {
+            "items": "productivecows:liquid_cooler"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "productivecows:cooler_stamp"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_liquid_cooler"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "productivecows:cooler_stamp"
+    ]
+  }
+}

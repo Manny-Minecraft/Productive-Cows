@@ -16,6 +16,9 @@ public enum CowComponentProvider implements IEntityComponentProvider, IServerDat
 
     @Override
     public void appendTooltip(ITooltip tooltip, EntityAccessor accessor, IPluginConfig config) {
+        if (accessor.getServerData().contains("Stats")) {
+            com.productivecows.genetics.CowStatsNbt.describe(com.productivecows.genetics.CowStatsNbt.read(accessor.getServerData().getCompound("Stats"))).forEach(tooltip::add);
+        }
         if (accessor.getServerData().contains("MilkingCooldown")) {
             int milking = accessor.getServerData().getInt("MilkingCooldown");
             if (milking > 0) {
@@ -42,6 +45,9 @@ public enum CowComponentProvider implements IEntityComponentProvider, IServerDat
         if (accessor.getEntity() instanceof MaterialCowEntity cow) {
             data.putInt("MilkingCooldown", cow.getMilkingCooldown());
             data.putInt("BreedingCooldown", Math.max(0, cow.getAge()));
+            CompoundTag stats = new CompoundTag();
+            com.productivecows.genetics.CowStatsNbt.write(stats, cow.getStats());
+            data.put("Stats", stats);
         }
     }
 
